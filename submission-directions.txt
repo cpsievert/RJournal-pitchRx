@@ -1,0 +1,11 @@
+From lyx go to:
+File -> Export -> LaTeX (pdflatex)
+
+* Run the post-process.R script
+* Clean up empty lines (white space) in RJwrapper.tex
+* Compile doc by running
+
+pdflatex RJwrapper.tex
+bibtex RJwrapper.aux
+pdflatex RJwrapper.tex
+pdflatex RJwrapper.tex
