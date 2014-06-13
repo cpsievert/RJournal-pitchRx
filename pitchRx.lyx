@@ -1,0 +1,6567 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass RJournal
+\begin_preamble
+\usepackage[buttonsize=1em]{animate}
+\newcommand{\proglang}[1]{\textsf{#1}}
+\usepackage[english]{babel}
+\usepackage{breakurl}
+\end_preamble
+\use_default_options true
+\begin_modules
+knitr
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine natbib_authoryear
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+You have to put the body of your article inside the 
+\begin_inset Quotes eld
+\end_inset
+
+article
+\begin_inset Quotes erd
+\end_inset
+
+ environment defined by RJournal.sty.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{article}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<setup, include=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+# NOTE TO SELF: if the RJournal.sty is updated, update it here - cd /usr/local/te
+xlive/2012/texmf/tex/latex/ 
+\end_layout
+
+\begin_layout Plain Layout
+
+options(width=80)
+\end_layout
+
+\begin_layout Plain Layout
+
+render_sweave() # use Schunk, Sinput and Soutput environments defined by
+ RJournal
+\end_layout
+
+\begin_layout Plain Layout
+
+set_header(highlight = '') # no need to 
+\backslash
+usepackage{Sweave}
+\end_layout
+
+\begin_layout Plain Layout
+
+opts_chunk$set(cache.path="cache/", out.width='1.05
+\backslash
+
+\backslash
+textwidth', warning=FALSE, message=FALSE, prompt=FALSE, tidy=FALSE) 
+\end_layout
+
+\begin_layout Plain Layout
+
+library(devtools)
+\end_layout
+
+\begin_layout Plain Layout
+
+#install_github('pitchRx', 'cpsievert')
+\end_layout
+
+\begin_layout Plain Layout
+
+library(pitchRx)
+\end_layout
+
+\begin_layout Plain Layout
+
+#install_github('XML2R', 'cpsievert')
+\end_layout
+
+\begin_layout Plain Layout
+
+library(XML2R)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+Taming PITCHf/x Data with 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Author
+by Carson Sievert
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex Abstract
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ is a framework that reduces the effort required to transform XML content
+ into tables in a way that preserves parent to child relationships.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ applies 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+'s grammar for XML manipulation to Major League Baseball Advanced Media
+ (MLBAM)'s Gameday data.
+ With 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+, one can easily obtain and store Gameday data in a remote database.
+ The Gameday website hosts a wealth of XML data, but perhaps most interesting
+ is PITCHf/x.
+ Among other things, PITCHf/x data can be used to recreate a baseball's
+ flight path from a pitcher's hand to home plate.
+ With 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+, one can easily create animations and interactive 3D scatterplots of the
+ baseball's flight path.
+ PITCHf/x data is also commonly used to generate a static plot of baseball
+ locations at the moment they cross home plate.
+ These plots, sometimes called 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{strike-zone plots}
+\end_layout
+
+\end_inset
+
+, can also refer to a plot of event probabilities over the same region.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ provides an easy and robust way to generate strike-zone plots using the
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{ggplot2}
+\end_layout
+
+\end_inset
+
+ package.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Subsection
+What is PITCHf/x?
+\end_layout
+
+\begin_layout Standard
+PITCHf/x is a general term for a system of cameras which tracks the flight
+ of a baseball with a series of 3D measurements.
+ These measurements define a baseball's flight path from a pitcher's hand
+ to home plate.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+A 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{pitcher}
+\end_layout
+
+\end_inset
+
+ throws a ball to the opposing 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{batter}
+\end_layout
+
+\end_inset
+
+, who stands besides home plate and tries to hit the ball into the field
+ of play.
+\end_layout
+
+\end_inset
+
+ A best fitting parametric curve is fit to these measurements under the
+ assumption of constant acceleration 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "patent"
+
+\end_inset
+
+.
+ There are studies that suggest that this assumption is quite reasonable
+ -- especially for non-knuckleballs 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "trajecoryAnalysis"
+
+\end_inset
+
+.
+ In other words, the smoothed flight paths are often a reasonable approximation
+ (within a couple of inches) of the real path.
+ The parameters used to fit this curve are made available in XML format
+ on a publicly accessible website.
+ This website, maintained by MLBAM, also hosts a wealth of other baseball
+ related data used to inform MLB's Gameday webcast in near real time.
+\end_layout
+
+\begin_layout Subsection
+Why is PITCHf/x important?
+\end_layout
+
+\begin_layout Standard
+On the business side of baseball, using statistical analysis to scout and
+ evaluate players has become mainstream.
+ When PITCHf/x was first introduced, 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "slate"
+
+\end_inset
+
+ proclaimed it as, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{quote} ``The new technology that will change statistical analysis
+ [of baseball] forever.'' 
+\backslash
+end{quote}
+\end_layout
+
+\end_inset
+
+ PITCHf/x has yet to fully deliver this claim, partially due to the difficulty
+ in accessing and deriving insight from the large amount of complex information.
+ By providing better tools to collect and visualize this data, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+CRANpkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ makes PITCHf/x analysis more accessible to the general public.
+\end_layout
+
+\begin_layout Subsection
+PITCHf/x applications
+\end_layout
+
+\begin_layout Standard
+PITCHf/x data is and can be used for many different projects.
+ It can also complement other baseball data sources, which poses an interesting
+ database management problem.
+ Statistical analysis of PITCHf/x data and baseball in general has become
+ so popular that it has helped expose statistical ideas and practice to
+ the general public.
+ If you have witnessed television broadcasts of MLB games, you know one
+ obvious application of PITCHf/x is locating pitches in the strike-zone
+ as well as recreating flight trajectories, tracking pitch speed, etc.
+ Some well-known and statistically intriguing problems related to PITCHf/x
+ include: classifying pitch types, predicting pitch sequences, and clustering
+ pitchers with similar tendencies 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "curve"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Contributions of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ has two main focuses 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "pitchRx"
+
+\end_inset
+
+.
+ The first focus is to provide easy access to Gameday data.
+ Not only is 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ helpful for collecting this data in bulk, but it has served as a helpful
+ teaching and research aide (
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://baseballwithr.wordpress.com/}
+\end_layout
+
+\end_inset
+
+ is one such example).
+ Methods for collecting Gameday data existed prior to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+; however, these methods are not easily extensible and require juggling
+ technologies that may not be familiar or accessible 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "database"
+
+\end_inset
+
+.
+ Moreover, these working environments are less desirable than R for data
+ analysis and visualization.
+ Since 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ is built upon 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+CRANpkg{XML2R}
+\end_layout
+
+\end_inset
+
+'s united framework, it can be easily modified and/or extended 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "XML2R"
+
+\end_inset
+
+.
+ For this same reason, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ serves as a model for building customized XML data collection tools with
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The other main focus of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ is to simplify the process creating popular PITCHf/x graphics.
+ Strike-zone plots and animations made via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ utilize the extensible 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+CRANpkg{ggplot2}
+\end_layout
+
+\end_inset
+
+ framework as well as various customized options 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "ggplot2"
+
+\end_inset
+
+.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{ggplot2}
+\end_layout
+
+\end_inset
+
+ is a convenient framework for generating strike-zone plots primarily because
+ of its facet schema which allows one to make visual comparisons across
+ any combination of discrete variable(s).
+ Interactive 3D scatterplots are based on the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+CRANpkg{rgl}
+\end_layout
+
+\end_inset
+
+ package and useful for gaining a new perspective on flight trajectories
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "rgl"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Getting familiar with Gameday
+\end_layout
+
+\begin_layout Standard
+Gameday data is hosted and made available for free thanks to MLBAM via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://gd2.mlb.com/components/game/mlb/}
+\end_layout
+
+\end_inset
+
+.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Please be respectful of this service and store any information after you
+ extract it instead of repeatedly querying the website.
+ Before using any content from this website, please also read the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gdx.mlb.com/components/copyright.txt}{copyright}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+ From this website, one can obtain many different types of data besides
+ PITCHf/x.
+ For example, one can obtain everything from 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2013/month_07/day_16/gid_2013_07_
+16_aasmlb_nasmlb_1/media/instadium.xml}{structured media metadata}
+\end_layout
+
+\end_inset
+
+ to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/twitter/anaInsiderTweets.xml}{insider
+ tweets}
+\end_layout
+
+\end_inset
+
+.
+ In fact, this website's purpose is to serve data to various 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://mlb.com}
+\end_layout
+
+\end_inset
+
+ web pages and applications.
+ As a result, some data is redundant and the format may not be optimal for
+ statistical analysis.
+ For these reasons, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+ function is focused on retrieving data that is useful for PITCHf/x analysis
+ and providing it in a convenient format for data analysis.
+ 
+\end_layout
+
+\begin_layout Standard
+Navigating through the MLBAM website can be overwhelming, but it helps to
+ recognize that a homepage exists for nearly every day and every game.
+ For example, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/}
+\end_layout
+
+\end_inset
+
+ displays numerous hyperlinks to various files specific to February 26th,
+ 2011.
+ On this page is a hyperlink to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/miniscoreboa
+rd.xml}{miniscoreboard.xml}
+\end_layout
+
+\end_inset
+
+ which contains information on every game played on that date.
+ This page also has numerous hyperlinks to game specific pages.
+ For example, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/gid_2011_02_
+26_phimlb_nyamlb_1/}{gid
+\backslash
+_2011
+\backslash
+_02
+\backslash
+_26
+\backslash
+_phimlb
+\backslash
+_nyamlb
+\backslash
+_1/}
+\end_layout
+
+\end_inset
+
+ points to the homepage for that day's game between the NY Yankees and Philadelp
+hia Phillies.
+ On this page is a hyperlink to the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/gid_2011_02_
+26_phimlb_nyamlb_1/players.xml}{players.xml}
+\end_layout
+
+\end_inset
+
+ file which contains information about the players, umpires, and coaches
+ (positions, names, batting average, etc.) coming into that game.
+ 
+\end_layout
+
+\begin_layout Standard
+Starting from a particular game's homepage and clicking on the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/gid_2011_02_
+26_phimlb_nyamlb_1/inning/}{inning/}
+\end_layout
+
+\end_inset
+
+ directory, we 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{should}
+\end_layout
+
+\end_inset
+
+ see another page with links to the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/gid_2011_02_
+26_phimlb_nyamlb_1/inning/inning_all.xml}{inning
+\backslash
+_all.xml}
+\end_layout
+
+\end_inset
+
+ file and the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://gd2.mlb.com/components/game/mlb/year_2011/month_02/day_26/gid_2011_02_
+26_phimlb_nyamlb_1/inning/inning_hit.xml}{inning
+\backslash
+_hit.xml}
+\end_layout
+
+\end_inset
+
+ file.
+ If it is available, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_all.xml}
+\end_layout
+
+\end_inset
+
+ file contains the PITCHf/x data for that game.
+ It's important to note that this file won't exist for some games, because
+ some games are played in venues that do not have a working PITCHf/x system
+ in place.
+ This is especially true for preseason games and games played prior to the
+ 2008 season when the PITCHf/x system became widely adopted.
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+In this case, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+ will print ``failed to load HTTP resource'' in the R console (after the
+ relevant file name) to indicate that no data was available.
+\end_layout
+
+\end_inset
+
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_hit.xml}
+\end_layout
+
+\end_inset
+
+ files have manually recorded spatial coordinates of where a home run landed
+ or where the baseball made initial contact with a defender after it was
+ hit into play.
+\end_layout
+
+\begin_layout Standard
+The relationship between these XML files and the tables returned by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+ is presented in Table
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\backslash
+ref{table:pitchfx}
+\end_layout
+
+\end_inset
+
+.
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch}
+\end_layout
+
+\end_inset
+
+ table is extracted from files whose name ends in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_all.xml}
+\end_layout
+
+\end_inset
+
+.
+ This is the only table returned by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+ that contains data on the pitch-by-pitch level.
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{atbat}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{runner}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{action}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{hip}
+\end_layout
+
+\end_inset
+
+ tables from this same file are commonly labeled somewhat ambiguously as
+ play-by-play data.
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{player}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{coach}
+\end_layout
+
+\end_inset
+
+, and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{umpire}
+\end_layout
+
+\end_inset
+
+ tables are extracted from 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{players.xml}
+\end_layout
+
+\end_inset
+
+ and are classified as game-by-game since there is one record per person
+ per game.
+ Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:relations"
+
+\end_inset
+
+ shows how these tables can be connected to one another in a database setting.
+ The direction of the arrows represent a one to possibly many relationship.
+ For example, at least one pitch is thrown for each 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{at bat}
+\end_layout
+
+\end_inset
+
+ (that is, each bout between pitcher and batter) and there are numerous
+ at bats within each game.
+ 
+\end_layout
+
+\begin_layout Standard
+In a rough sense, one can relate tables returned by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+ back to XML nodes in the XML files.
+ For convenience, some information in certain XML nodes are combined into
+ one table.
+ For example, information gleaned from the `top', `bottom', and `inning'
+ XML nodes within 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_all.xml}
+\end_layout
+
+\end_inset
+
+ are included as 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_side}
+\end_layout
+
+\end_inset
+
+ fields in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{po}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{atbat}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{runner}
+\end_layout
+
+\end_inset
+
+, and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{action}
+\end_layout
+
+\end_inset
+
+ tables.
+ This helps reduce the burden of merging many tables together in order to
+ have inning information on the play-by-play and/or pitch-by-pitch level.
+ Other information is simply ignored simply because it is redundant.
+ For example, the `game' node within the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{players.xml}
+\end_layout
+
+\end_inset
+
+ file contains information that can be recovered from the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{game}
+\end_layout
+
+\end_inset
+
+ table extracted from the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{miniscoreboard.xml}
+\end_layout
+
+\end_inset
+
+ file.
+ If the reader wants a more detailed explanation of fields in these tables,
+ 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "baseball"
+
+\end_inset
+
+ provide nice overview.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{widetable}[ht]   
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering   % used for centering table 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{tabular}{cccc}     
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+toprule
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+textbf{
+\backslash
+begin{tabular}[c]{@{}c@{}} Source file 
+\backslash
+
+\backslash
+ suffix 
+\backslash
+end{tabular}}	& 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+textbf{
+\backslash
+begin{tabular}[c]{@{}c@{}} Information 
+\backslash
+
+\backslash
+ level 
+\backslash
+end{tabular}} 	&
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+textbf{XML nodes}  														&
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+textbf{
+\backslash
+begin{tabular}[c]{@{}c@{}} Tables returned
+\backslash
+
+\backslash
+ by 
+\backslash
+code{scrape} 
+\backslash
+end{tabular}} 
+\backslash
+
+\backslash
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+  	
+\backslash
+midrule     
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{miniscoreboard.xml} & game-by-game  & 
+\backslash
+begin{tabular}[c]{@{}c@{}} games, game, 
+\backslash
+
+\backslash
+ game
+\backslash
+_media, media 
+\backslash
+end{tabular}  & game, media   
+\backslash
+
+\backslash
+[12pt]
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+midrule 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{players.xml} & game-by-game & 
+\backslash
+begin{tabular}[c]{@{}c@{}} game, team, player, 
+\backslash
+
+\backslash
+ coach, umpire 
+\backslash
+end{tabular}  & 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{tabular}[c]{@{}c@{}} player, coach, 
+\backslash
+
+\backslash
+ umpire 
+\backslash
+end{tabular}            
+\backslash
+
+\backslash
+[12pt]
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+midrule 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_all.xml} & 
+\backslash
+begin{tabular}[c]{@{}c@{}} play-by-play, 
+\backslash
+
+\backslash
+ pitch-by-pitch  
+\backslash
+end{tabular}  & 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{tabular}[c]{@{}c@{}} game, inning, bottom, top, 
+\backslash
+
+\backslash
+ atbat, po, pitch, runner, action 
+\backslash
+end{tabular} & 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{tabular}[c]{@{}c@{}} atbat, po, pitch, 
+\backslash
+
+\backslash
+ runner, action 
+\backslash
+end{tabular}    
+\backslash
+
+\backslash
+[18pt]
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+midrule 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_hit.xml} & play-by-play  & hitchart, hip  & hip     
+\backslash
+
+\backslash
+   
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+bottomrule   
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+end{tabular} 
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+caption{Structure of PITCHf/x and related Gameday data sources accessible
+ to 
+\backslash
+code{scrape}}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+label{table:pitchfx} 
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{widetable}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 0.75]{Drawing1.png}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Table relations between Gameday data accessible via 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+.
+ The direction of the arrows indicate a one to possibly many relationship.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:relations"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introducing 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ adds to the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://cran.r-project.org/web/views/WebTechnologies.html}{CRAN Task View
+ on Web Technologies and Services}
+\end_layout
+
+\end_inset
+
+ by focusing on the transformation of XML content into a collection of tables.
+ Compared to a lower-level API like the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML}
+\end_layout
+
+\end_inset
+
+ package, it can significantly reduce the amount of coding and cognitive
+ effort required to perform such a task.
+ In contrast to most higher-level APIs, it does not make assumptions about
+ the XML structure or its source.
+ Although 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ works on any structure, performance and user experience are enhanced if
+ the content has an inherent relational structure.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+'s novel approach to XML data collection breaks down the transformation
+ process into a few simple steps and allows the user to decide how to apply
+ those steps.
+\end_layout
+
+\begin_layout Standard
+The next few sections demonstrate how 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ leverages 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ in order to produce a collection of tables from 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_all.xml}
+\end_layout
+
+\end_inset
+
+ files.
+ A similar approach is used by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitchRx::scrape}
+\end_layout
+
+\end_inset
+
+ to construct tables from the other Gameday files in Table
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\backslash
+ref{table:pitchfx}
+\end_layout
+
+\end_inset
+
+.
+ In fact, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ has also been implemented in the R package 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{https://github.com/cpsievert/bbscrapeR}{bbscrapeR}
+\end_layout
+
+\end_inset
+
+ which collects data from 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://nba.com}{nba.com}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://wnba.com}{wnba.com}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Constructing file names
+\end_layout
+
+\begin_layout Standard
+Sometimes the most frustrating part of obtaining data in bulk off of the
+ web is finding the proper collection of URLs or file names of interest.
+ Since files on the Gameday website are fairly well organized, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{makeUrls}
+\end_layout
+
+\end_inset
+
+ function can be used to construct 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{urls}
+\end_layout
+
+\end_inset
+
+ that point to every game's homepage within a window of dates.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<makeUrls, cache=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+urls <- makeUrls(start = "2011-06-01", end = "2011-06-01") 
+\end_layout
+
+\begin_layout Plain Layout
+
+sub("http://gd2.mlb.com/components/game/mlb/", "", head(urls))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Extracting observations
+\end_layout
+
+\begin_layout Standard
+Once we have a collection of XML 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{files}
+\end_layout
+
+\end_inset
+
+, the next step is to parse the content into a list of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{observations}
+\end_layout
+
+\end_inset
+
+.
+ An observation is technically defined as a matrix with one row and some
+ number of columns.
+ The columns are defined by XML attributes and the XML value (if any) for
+ a particular XML lineage.
+ The name of each observation tracks the XML hierarchy so observations can
+ be grouped together in a sensible fashion at a later point.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<extract, cache=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+library(XML2R)
+\end_layout
+
+\begin_layout Plain Layout
+
+files <- paste0(urls, "/inning/inning_all.xml")
+\end_layout
+
+\begin_layout Plain Layout
+
+obs <- XML2Obs(files, url.map = TRUE, quiet = TRUE) 
+\end_layout
+
+\begin_layout Plain Layout
+
+table(names(obs))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This output tells us that 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{length(obs[grep("bottom//atbat//pitch", names(obs))])}
+\end_layout
+
+\end_inset
+
+ pitches were thrown in the bottom inning and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{length(obs[grep("top//atbat//pitch", names(obs))])}
+\end_layout
+
+\end_inset
+
+ were thrown in the top inning on June 1st, 2011.
+ Also, there are 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{length(unique(names(obs)))-1}
+\end_layout
+
+\end_inset
+
+ different levels of observations.
+ The list element named 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{url
+\backslash
+_map}
+\end_layout
+
+\end_inset
+
+ is not considered an observation and was included since 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{url.map = TRUE}
+\end_layout
+
+\end_inset
+
+.
+ This helps avoid repeating long file names in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{url
+\backslash
+_key}
+\end_layout
+
+\end_inset
+
+ column which tracks the mapping between observations and file names.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<url_key>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+obs[c(1, 2500)]
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Renaming observations
+\end_layout
+
+\begin_layout Standard
+Before grouping observations into a collection tables based on their names,
+ one may want to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{re
+\backslash
+_name}
+\end_layout
+
+\end_inset
+
+ observations.
+ Observations with names 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{'game//inning//bottom//atbat'}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{'game//inning//top//atbat'}
+\end_layout
+
+\end_inset
+
+ should be included in the same table since they share XML attributes (in
+ other words, the observations share variables).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<re_name>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+tmp <- re_name(obs, equiv = c("game//inning//top//atbat",              
+               
+\end_layout
+
+\begin_layout Plain Layout
+
+  "game//inning//bottom//atbat"), diff.name = "inning_side") 
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By passing these names to the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{equiv}
+\end_layout
+
+\end_inset
+
+ argument, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{re
+\backslash
+_name}
+\end_layout
+
+\end_inset
+
+ determines the difference in the naming scheme and suppresses that difference.
+ In other words, observation names that match the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{equiv}
+\end_layout
+
+\end_inset
+
+ argument will be renamed to 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{'game//inning//atbat'}
+\end_layout
+
+\end_inset
+
+.
+ The information removed from the name is not lost; however, as a new column
+ is appended to the end of each relevant observation.
+ For example, notice how the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_side}
+\end_layout
+
+\end_inset
+
+ column contains the part of the name we just removed:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<look-ma>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+tmp[grep("game//inning//atbat", names(tmp))][1:2]
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For similar reasons, other observation name pairs are renamed in a similar
+ fashion.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<re_name2>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+tmp <- re_name(tmp, equiv = c("game//inning//top//atbat//runner",      
+                       
+\end_layout
+
+\begin_layout Plain Layout
+
+  "game//inning//bottom//atbat//runner"), diff.name = "inning_side")
+\end_layout
+
+\begin_layout Plain Layout
+
+tmp <- re_name(tmp, equiv = c("game//inning//top//action",             
+                
+\end_layout
+
+\begin_layout Plain Layout
+
+  "game//inning//bottom//action"), diff.name = "inning_side")  
+\end_layout
+
+\begin_layout Plain Layout
+
+tmp <- re_name(tmp, equiv = c("game//inning//top//atbat//po",          
+                  
+\end_layout
+
+\begin_layout Plain Layout
+
+  "game//inning//bottom//atbat//po"), diff.name = "inning_side")
+\end_layout
+
+\begin_layout Plain Layout
+
+obs2 <- re_name(tmp, equiv = c("game//inning//top//atbat//pitch",      
+                       
+\end_layout
+
+\begin_layout Plain Layout
+
+  "game//inning//bottom//atbat//pitch"), diff.name = "inning_side") 
+\end_layout
+
+\begin_layout Plain Layout
+
+table(names(obs2))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Linking observations
+\end_layout
+
+\begin_layout Standard
+After all that renaming, we now have 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{length(unique(names(obs2)))-1}
+\end_layout
+
+\end_inset
+
+ different levels of observations.
+ Let's examine the first three observations on the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{game//inning}
+\end_layout
+
+\end_inset
+
+ level:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<inning>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+obs2[grep("^game//inning$", names(obs2))][1:3] 
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Before grouping observations into tables, it is usually important preserve
+ the parent-to-child relationships in the XML lineage.
+ For example, one may want to map a particular pitch back to the inning
+ in which it was thrown.
+ Using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{add
+\backslash
+_key}
+\end_layout
+
+\end_inset
+
+ function, the relevant value of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{num}
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{game//inning}
+\end_layout
+
+\end_inset
+
+ observations can be 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{recycle}
+\end_layout
+
+\end_inset
+
+d to its XML descendants.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<add_key, message=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+obswkey <- add_key(obs2, parent = "game//inning", recycle = "num", key.name
+ = "inning")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As it turns out, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{away
+\backslash
+_team}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{home
+\backslash
+_team}
+\end_layout
+
+\end_inset
+
+ columns are redundant as this information is embedded in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{url}
+\end_layout
+
+\end_inset
+
+ column.
+ Thus, there is only one other informative attribute on this level which
+ is 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{next}
+\end_layout
+
+\end_inset
+
+.
+ By recycling this value among its descendants, we remove any need to retain
+ a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{game//inning}
+\end_layout
+
+\end_inset
+
+ table.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<add_key2, message=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+obswkey <- add_key(obswkey, parent = "game//inning", recycle = "next")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is also imperative that we can link a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{runner}
+\end_layout
+
+\end_inset
+
+, or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{po}
+\end_layout
+
+\end_inset
+
+ back to a particular 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{atbat}
+\end_layout
+
+\end_inset
+
+.
+ This can be done as follows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<add_key3, message=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+obswkey <- add_key(obswkey, parent = "game//inning//atbat", recycle = "num")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Collapsing observations
+\end_layout
+
+\begin_layout Standard
+Finally, we are in a position to pool together observations that have a
+ common name.
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{collapse
+\backslash
+_obs}
+\end_layout
+
+\end_inset
+
+ function achieves this by row binding observations with the same name together
+ and returning a list of matrices.
+ Note that 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{collapse
+\backslash
+_obs}
+\end_layout
+
+\end_inset
+
+ does not require that observations from the same level to have the same
+ set of variables in order to be bound into a common table.
+ In the case where variables are missing, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{NA}
+\end_layout
+
+\end_inset
+
+s will be inserted as values.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<collapse_obs>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+tables <- collapse_obs(obswkey) 
+\end_layout
+
+\begin_layout Plain Layout
+
+#As mentioned before, we do not need the 'inning' table 
+\end_layout
+
+\begin_layout Plain Layout
+
+tables <- tables[-grep("^game//inning$", names(tables))]      
+\end_layout
+
+\begin_layout Plain Layout
+
+table.names <- c("game", "action", "atbat", "pitch", "po", "runner") 
+\end_layout
+
+\begin_layout Plain Layout
+
+tables <- setNames(tables, table.names) 
+\end_layout
+
+\begin_layout Plain Layout
+
+head(tables[["runner"]])
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Collecting Gameday data with 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The main scraping function in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+, can be used to easily obtain data from the files listed in Table
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\backslash
+ref{table:pitchfx}
+\end_layout
+
+\end_inset
+
+.
+ In fact, any combination of these files can be queried using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{suffix}
+\end_layout
+
+\end_inset
+
+ argument.
+ In the example below, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{start}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{end}
+\end_layout
+
+\end_inset
+
+ arguments are also used so that all available file types for June 1st,
+ 2011 are queried.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<scrape-ex, eval=FALSE>>= 
+\end_layout
+
+\begin_layout Plain Layout
+
+library(pitchRx)
+\end_layout
+
+\begin_layout Plain Layout
+
+files <- c("inning/inning_all.xml", "inning/inning_hit.xml", 
+\end_layout
+
+\begin_layout Plain Layout
+
+  "miniscoreboard.xml", "players.xml")
+\end_layout
+
+\begin_layout Plain Layout
+
+dat <- scrape(start = "2011-06-01", end = "2011-06-01", suffix = files)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{game.ids}
+\end_layout
+
+\end_inset
+
+ option can be used instead of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{start}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{end}
+\end_layout
+
+\end_inset
+
+ to obtain an equivalent 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{dat}
+\end_layout
+
+\end_inset
+
+ object.
+ This option can be useful if the user wants to query specific games rather
+ than all games played over a particular time span.
+ When using this 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{game.ids}
+\end_layout
+
+\end_inset
+
+ option, the built-in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{gids}
+\end_layout
+
+\end_inset
+
+ object, is quite convenient.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<gids>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+data(gids, package = "pitchRx")
+\end_layout
+
+\begin_layout Plain Layout
+
+gids11 <- gids[grep("2011_06_01", gids)]
+\end_layout
+
+\begin_layout Plain Layout
+
+head(gids11)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<gids2, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+dat <- scrape(game.ids = gids11, suffix = files)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The object 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{dat}
+\end_layout
+
+\end_inset
+
+ is a list of data frames containing all data available for June 1st, 2011
+ using 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+.
+ The list names match the table names provided in Table
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\backslash
+ref{table:pitchfx}
+\end_layout
+
+\end_inset
+
+.
+ For example, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{dat
+\backslash
+$atbat}
+\end_layout
+
+\end_inset
+
+ is data frame with every at bat on June 1st, 2011 and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{dat
+\backslash
+$pitch}
+\end_layout
+
+\end_inset
+
+ has information related to the outcome of each pitch (including PITCHf/x
+ parameters).
+ The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{object.size}
+\end_layout
+
+\end_inset
+
+ of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{dat}
+\end_layout
+
+\end_inset
+
+ is nearly 300MB.
+ Multiplying this number by 100 days exceeds the RAM limitations on most
+ machines.
+ Thus, if a large amount of data is required, the user should exploit the
+ R database interface 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "DBI"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Storing and querying Gameday data
+\end_layout
+
+\begin_layout Standard
+Since PITCHf/x data can easily exhaust random-access memory, one should
+ consider establishing a database instance before using 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+.
+ By passing a database connection to the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{connect}
+\end_layout
+
+\end_inset
+
+ argument, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{scrape}
+\end_layout
+
+\end_inset
+
+ will try to create (and/or append to existing) tables using that connection.
+ If the connection fails for some reason, tables will be written as csv
+ files in the current working directory.
+ The benefits of using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{connect}
+\end_layout
+
+\end_inset
+
+ argument includes improved memory management which can greatly reduce run
+ time.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{connect}
+\end_layout
+
+\end_inset
+
+ will support a MySQL connection, but creating a SQLite database is quite
+ easy with 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+CRANpkg{dplyr}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "dplyr"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<SQLite, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+library(dplyr)
+\end_layout
+
+\begin_layout Plain Layout
+
+my_db <- src_sqlite("GamedayDB.sqlite3", create = TRUE)
+\end_layout
+
+\begin_layout Plain Layout
+
+# Collect and store all PITCHf/x data from 2008 to 2013
+\end_layout
+
+\begin_layout Plain Layout
+
+scrape(start = "2008-01-01", end = "2014-01-01", 
+\end_layout
+
+\begin_layout Plain Layout
+
+  suffix = "inning/inning_all.xml", connect = my_db$con)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the later sections, animations of four-seam and cut fastballs thrown
+ by Mariano Rivera and Phil Hughes during the 2011 season are created.
+ In order to obtain the necessary data, one must set criteria on: values
+ of the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitcher
+\backslash
+_name}
+\end_layout
+
+\end_inset
+
+ field in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch}
+\end_layout
+
+\end_inset
+
+ table, values of the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{des}
+\end_layout
+
+\end_inset
+
+ field in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{atbat}
+\end_layout
+
+\end_inset
+
+ table, and the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{url}
+\end_layout
+
+\end_inset
+
+ field in both tables.
+ Thus, to speed the time to execute such a query, one should create an index
+ on these three fields.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<create-index, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+dbSendQuery(my_db$con, "CREATE INDEX url_atbat ON atbat(url)") 
+\end_layout
+
+\begin_layout Plain Layout
+
+dbSendQuery(my_db$con, "CREATE INDEX url_pitch ON pitch(url)") 
+\end_layout
+
+\begin_layout Plain Layout
+
+dbSendQuery(my_db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+dbSendQuery(my_db$con, "CREATE INDEX des_index ON pitch(des)")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Although our desired query could be expressed entirely in SQL, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{dplyr}
+\end_layout
+
+\end_inset
+
+'s grammar for data manipulation (which is database agnostic) can help to
+ simplify the task.
+ First, create 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch11}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{atbat11}
+\end_layout
+
+\end_inset
+
+ which are 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{representations}
+\end_layout
+
+\end_inset
+
+ of 2011 data in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{my
+\backslash
+_db}
+\end_layout
+
+\end_inset
+
+.
+ That is, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch11}
+\end_layout
+
+\end_inset
+
+ does not actually pull data from every pitch from 2011 into memory, but
+ is a portrayal of the relevant data sitting in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{my
+\backslash
+_db}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<rep, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+pitch11 <- tbl(my_db, sql("SELECT * FROM pitch WHERE pitch.url LIKE '%year_2011%'
+"))
+\end_layout
+
+\begin_layout Plain Layout
+
+atbat11 <- tbl(my_db, sql("SELECT * FROM atbat WHERE atbat.url LIKE '%year_2011%'
+"))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Next, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{filter}
+\end_layout
+
+\end_inset
+
+ the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{atbat11}
+\end_layout
+
+\end_inset
+
+ table to restrict to at bats in 2011 where either Rivera or Hughes was
+ the pitcher.
+ Then 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{filter}
+\end_layout
+
+\end_inset
+
+ the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch11}
+\end_layout
+
+\end_inset
+
+ table to include only four-seam (FF) and cut (FC) fastballs from 2011.
+ By taking an 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inner
+\backslash
+_join}
+\end_layout
+
+\end_inset
+
+ of these two filtered tables, we are left with one table representing the
+ data of interest.
+ Lastly, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{collect}
+\end_layout
+
+\end_inset
+
+ the resulting database query in order to bring the relevant data into the
+ R session.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<filter, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+bats <- filter(atbat11, 
+\end_layout
+
+\begin_layout Plain Layout
+
+  pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
+\end_layout
+
+\begin_layout Plain Layout
+
+FBs <- filter(pitch11, pitch_type == "FF" | pitch_type == "FC")
+\end_layout
+
+\begin_layout Plain Layout
+
+pitches <- collect(inner_join(FBs, bats))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Visualizing PITCHf/x
+\end_layout
+
+\begin_layout Subsection
+Strike-zone plots and umpire bias
+\end_layout
+
+\begin_layout Standard
+Amongst the most common PITCHf/x graphics are strike-zone plots.
+ Such a plot has two axes and the coordinates represent the location of
+ baseballs as they cross home plate.
+ The term strike-zone plot can refer to either 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{density}
+\end_layout
+
+\end_inset
+
+ or 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{probabilistic}
+\end_layout
+
+\end_inset
+
+ plots.
+ Density plots are useful for exploring what 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{actually}
+\end_layout
+
+\end_inset
+
+ occurred, but probabilistic plots can help address much more interesting
+ questions using statistical inference.
+ Although probabilistic plots can be used to visually track any event probabilit
+y across the strike-zone, their most popular use is for addressing umpire
+ bias in a strike versus ball decision 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "bias"
+
+\end_inset
+
+.
+ The probabilistic plots section demonstrates how 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ simplifies the process behind creating such plots via a case study on the
+ impact of home field advantage on umpire decisions.
+\end_layout
+
+\begin_layout Standard
+In the world of sports, it is a common belief that umpires (or referees)
+ have a tendency to favor the home team.
+ PITCHf/x provides a unique opportunity to add to this discussion by modeling
+ the probability of a called strike at home games versus away games.
+ Specifically, conditioned upon the umpire making a decision at a specific
+ location in the strike-zone, if the probability that a home pitcher receives
+ a called strike is higher than the probability that an away pitcher receives
+ a called strike, then there is evidence to support umpire bias towards
+ a home pitcher.
+\end_layout
+
+\begin_layout Standard
+There are many different possible outcomes of each pitch, but we can condition
+ on the umpire making a decision by limiting to the following two cases.
+ A 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{called strike}
+\end_layout
+
+\end_inset
+
+ is an outcome of a pitch where the batter does not swing and the umpire
+ declares the pitch a strike (which is a favorable outcome for the pitcher).
+ A 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dfn{ball}
+\end_layout
+
+\end_inset
+
+ is another outcome where the batter does not swing and the umpire declares
+ the pitch a ball (which is a favorable outcome for the batter).
+ All 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{decisions}
+\end_layout
+
+\end_inset
+
+ made starting in 2008 can be obtained from 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{my
+\backslash
+_db}
+\end_layout
+
+\end_inset
+
+ with the following query using 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{dplyr}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<query-decisions, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+pitch <- select(tbl(my_db, "pitch"), px, pz, des)
+\end_layout
+
+\begin_layout Plain Layout
+
+atbat <- select(tbl(my_db, "atbat"), b_height, p_throws, stand, inning_side)
+\end_layout
+
+\begin_layout Plain Layout
+
+decisions <- collect(inner_join(pitch, atbat))
+\end_layout
+
+\begin_layout Plain Layout
+
+#This indicator is used as a response when constructing probabilistic plots
+\end_layout
+
+\begin_layout Plain Layout
+
+decisions$strike <- as.numeric(decisions$des %in% "Called Strike")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Density plots
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{decisions}
+\end_layout
+
+\end_inset
+
+ data frame contains data on over 2.5 million pitches thrown from 2008 to
+ 2013.
+ About a third of them are called strikes and two-thirds balls.
+ Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:STRIKES"
+
+\end_inset
+
+ shows the density of all called strikes.
+ Clearly, most called strikes occur on the outer region of the strike-zone.
+ Many factors could contribute to this phenomenon; which we will not investigate
+ here.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<subset, eval=FALSE>>= 
+\end_layout
+
+\begin_layout Plain Layout
+
+# strikeFX uses the stand variable to calculate strike-zones 
+\end_layout
+
+\begin_layout Plain Layout
+
+# Here is a slick way to create better labels for stand without changing
+ its values
+\end_layout
+
+\begin_layout Plain Layout
+
+relabel <- function(variable, value) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+  value <- sub("^R$", "Right-Handed Batter", value) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  sub("^L$", "Left-Handed Batter", value) 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+strikes <- subset(decisions, strike == 1)
+\end_layout
+
+\begin_layout Plain Layout
+
+strikeFX(strikes, geom = "tile", layer = facet_grid(.
+ ~ stand, labeller = relabel))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 1]{strikes.pdf}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:STRIKES"
+
+\end_inset
+
+ Density of called strikes for right-handed batters and left-handed batters
+ (from 2008 to 2013).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:STRIKES"
+
+\end_inset
+
+ shows one static rectangle (or strike-zone) per plot automatically generated
+ by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{strikeFX}
+\end_layout
+
+\end_inset
+
+.
+ The definition of the strike-zone is notoriously ambiguous.
+ As a result, the boundaries of the strike-zone may be noticeably different
+ in some situations.
+ However, we can achieve a fairly accurate representation of strike-zones
+ using a rectangle defined by batters' average height and stance 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "Strikezones"
+
+\end_inset
+
+.
+ As Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:strike-probs"
+
+\end_inset
+
+ reinforces, batter stance makes an important difference since the strike-zone
+ seems to be horizontally shifted away from the batter.
+ The batter's height is also important since the strike-zone is classically
+ defined as approximately between the batter's knees and armpits.
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:STRIKES"
+
+\end_inset
+
+ has is one strike-zone per plot since the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{layer}
+\end_layout
+
+\end_inset
+
+ option contains a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{ggplot2}
+\end_layout
+
+\end_inset
+
+ argument that facets according to batter stance.
+ Facet layers are a powerful tool for analyzing PITCHf/x data because they
+ help produce quick and insightful comparisons.
+ In addition to using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{layer}
+\end_layout
+
+\end_inset
+
+ option, one can add layers to a graphic returned by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{strikeFX}
+\end_layout
+
+\end_inset
+
+ using 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{ggplot2}
+\end_layout
+
+\end_inset
+
+ arithmetic.
+ It is also worth pointing out that Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:STRIKES"
+
+\end_inset
+
+ could have been created without introducing the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{strikes}
+\end_layout
+
+\end_inset
+
+ data frame by using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density1}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density2}
+\end_layout
+
+\end_inset
+
+ options.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<STRIKES, eval=FALSE>>= 
+\end_layout
+
+\begin_layout Plain Layout
+
+strikeFX(decisions, geom = "tile", density1 = list(des = "Called Strike"),
+          
+\end_layout
+
+\begin_layout Plain Layout
+
+  density2 = list(des = "Called Strike")) + facet_grid(.
+ ~ stand, labeller = relabel)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In general, when 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density1}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density2}
+\end_layout
+
+\end_inset
+
+ are identical, the result is equivalent to subsetting the data frame appropriat
+ely beforehand.
+ More importantly, by specifying 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{different}
+\end_layout
+
+\end_inset
+
+ values for 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density1}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density2}
+\end_layout
+
+\end_inset
+
+, differenced densities are easily generated.
+ In this case, a grid of density estimates for 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density2}
+\end_layout
+
+\end_inset
+
+ are subtracted from the corresponding grid of density estimates for 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density1}
+\end_layout
+
+\end_inset
+
+.
+ Note that the default 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{NULL}
+\end_layout
+
+\end_inset
+
+ value for either density option infers that the entire data set defines
+ the relevant density.
+ Thus, if 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density2}
+\end_layout
+
+\end_inset
+
+ was 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{NULL}
+\end_layout
+
+\end_inset
+
+ (when 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density1 = list(des = 'Called Strike')}
+\end_layout
+
+\end_inset
+
+), we would obtain the density of called strikes minus the density of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{both}
+\end_layout
+
+\end_inset
+
+ called strikes and balls.
+ In Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:strikesVSballs"
+
+\end_inset
+
+, we define 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density1}
+\end_layout
+
+\end_inset
+
+ as called strikes and define 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{density2}
+\end_layout
+
+\end_inset
+
+ as balls.
+ As expected, we see positive density values (in blue) inside the strike-zone
+ and negative density values (in red) outside of the strike-zone.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<diff, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+strikeFX(decisions, geom = "tile", density1 = list(des = "Called Strike"),
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+  density2 = list(des = "Ball"), layer = facet_grid(.
+ ~ stand, labeller = relabel)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 1]{strikesVSballs.pdf}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:strikesVSballs"
+
+\end_inset
+
+ Density of called strikes minus density of balls for both right-handed
+ batters and left-handed batters (from 2008 to 2013).
+ The blue region indicates a higher frequency of called strikes and the
+ red region indicates a higher frequency of balls.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+These density plots are helpful for visualizing the observed frequency of
+ events; however, they are not very useful for addressing our umpire bias
+ hypothesis.
+ Instead of looking simply at the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{density}
+\end_layout
+
+\end_inset
+
+, we want to model the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{probability}
+\end_layout
+
+\end_inset
+
+ of a strike called at each coordinate given the umpire has to make a decision.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Probabilistic plots
+\end_layout
+
+\begin_layout Standard
+There are many approaches to probabilistic modeling over a two dimensional
+ spatial region.
+ Since our response is often categorical, generalized additive models (GAMs)
+ is a popular and desirable approach to modeling events over the strike-zone
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "loess"
+
+\end_inset
+
+.
+ There are numerous R package implementations of GAMs, but the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{bam}
+\end_layout
+
+\end_inset
+
+ function from the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+CRANpkg{mgcv}
+\end_layout
+
+\end_inset
+
+ package has several desirable properties 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "mgcv"
+
+\end_inset
+
+.
+ Most importantly, the smoothing parameter can be estimated using several
+ different methods.
+ In order to have a reasonable estimate of the smooth 2D surface, GAMs require
+ fairly large amount of observations.
+ As a result, run time can be an issue -- especially when modeling 2.5 million
+ observations! Thankfully, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{bam}
+\end_layout
+
+\end_inset
+
+ function has a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{cluster}
+\end_layout
+
+\end_inset
+
+ argument which allows one to distribute computations across multiple cores
+ using the built in 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{parallel}
+\end_layout
+
+\end_inset
+
+ package.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<mgcv, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+library(parallel) 
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeCluster(detectCores() - 1)
+\end_layout
+
+\begin_layout Plain Layout
+
+library(mgcv) 
+\end_layout
+
+\begin_layout Plain Layout
+
+m <- bam(strike ~ interaction(stand, p_throws, inning_side) +          
+      
+\end_layout
+
+\begin_layout Plain Layout
+
+  s(px, pz, by = interaction(stand, p_throws, inning_side)),           
+   
+\end_layout
+
+\begin_layout Plain Layout
+
+  data = decisions, family = binomial(link = 'logit'), cluster = cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This formula models the probability of a strike as a function of the baseball's
+ spatial location, the batter's stance, the pitcher's throwing arm, and
+ the side of the inning.
+ Since home pitchers always pitch during the top of the inning, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_side}
+\end_layout
+
+\end_inset
+
+ also serves as an indication of whether a pitch is thrown by a home pitcher.
+ In this case, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{interaction}
+\end_layout
+
+\end_inset
+
+ function creates a factor with eight different levels since every input
+ factor has two levels.
+ Consequently, there are 8 different levels of smooth surfaces over the
+ spatial region defined by 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{px}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pz}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The fitted model 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{m}
+\end_layout
+
+\end_inset
+
+ contains a lot of information which 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{strikeFX}
+\end_layout
+
+\end_inset
+
+ uses in conjunction with any 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{ggplot2}
+\end_layout
+
+\end_inset
+
+ facet commands to infer which and how surfaces should be plotted.
+ In particular, the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{var.summary}
+\end_layout
+
+\end_inset
+
+ is used to identify model covariates, as well their default conditioning
+ values.
+ In our case, the majority of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{decisions}
+\end_layout
+
+\end_inset
+
+ are from right-handed pitchers and the top of the inning.
+ Thus, the default conditioning values are 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{"top"}
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_side}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{"R"}
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{p
+\backslash
+_throws}
+\end_layout
+
+\end_inset
+
+.
+ If different conditioning values are desired, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{var.summary}
+\end_layout
+
+\end_inset
+
+ can be modified accordingly.
+ To demonstrate, Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:strike-probs"
+
+\end_inset
+
+ shows 2 of the 8 possible surfaces that correspond to a right-handed 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{away}
+\end_layout
+
+\end_inset
+
+ pitcher.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<probs, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+away <- list(inning_side = factor("bottom", levels = c("top", "bottom")))
+\end_layout
+
+\begin_layout Plain Layout
+
+m$var.summary <- modifyList(m$var.summary, away)
+\end_layout
+
+\begin_layout Plain Layout
+
+strikeFX(decisions, model = m, layer = facet_grid(.
+ ~ stand, labeller = relabel))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 1]{prob-strike.pdf}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:strike-probs"
+
+\end_inset
+
+Probability that a right-handed away pitcher receives a called strike (provided
+ the umpire has to make a decision).
+ Plots are faceted by the handedness of the batter.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the same intuition exploited earlier to obtain differenced density
+ plots, we can easily obtain differenced probability plots.
+ To obtain Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:diff-probs"
+
+\end_inset
+
+, we simply add 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{p
+\backslash
+_throws}
+\end_layout
+
+\end_inset
+
+ as another facet variable and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{inning
+\backslash
+_side}
+\end_layout
+
+\end_inset
+
+ as a differencing variable.
+ In this case, conditioning values do not matter since every one of the
+ 8 surfaces are required in order to produce Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:diff-probs"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<diff-probs, eval=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+# Function to create better labels for both stand and p_throws
+\end_layout
+
+\begin_layout Plain Layout
+
+relabel2 <- function(variable, value) {    
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (variable %in% "stand")      
+\end_layout
+
+\begin_layout Plain Layout
+
+    return(sub("^L$", "Left-Handed Batter",                 
+\end_layout
+
+\begin_layout Plain Layout
+
+      sub("^R$", "Right-Handed Batter", value)))   
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (variable %in% "p_throws")      
+\end_layout
+
+\begin_layout Plain Layout
+
+    return(sub("^L$", "Left-Handed Pitcher",                 
+\end_layout
+
+\begin_layout Plain Layout
+
+      sub("^R$", "Right-Handed Pitcher", value))) 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+strikeFX(decisions, model = m, layer = facet_grid(p_throws ~ stand, labeller
+ = relabel2),
+\end_layout
+
+\begin_layout Plain Layout
+
+  density1 = list(inning_side = "top"), density2 = list(inning_side = "bottom"))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 1]{prob-diff.pdf}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:diff-probs"
+
+\end_inset
+
+Difference between home and away pitchers in the probability of a strike
+ (provided the umpire has to make a decision).
+ The blue regions indicate a higher probability of a strike for home pitchers
+ and red regions indicate a higher probability of a strike for away pitchers.
+ Plots are faceted by the handedness of both the pitcher and the batter.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The four different plots in Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:diff-probs"
+
+\end_inset
+
+ represent the four different combination of values among 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{p
+\backslash
+_throws}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{stand}
+\end_layout
+
+\end_inset
+
+.
+ In general, provided that a pitcher throws to a batter in the blue region,
+ the pitch is more likely to be called a strike if the pitcher is on their
+ home turf.
+ Interestingly, there is a well-defined blue elliptical band around the
+ boundaries of the typical strike-zone.
+ Thus, home pitchers are more likely to receive a favorable call -- especially
+ when the classification of the pitch is in question.
+ In some areas, the home pitcher has up to a 6 percent higher probability
+ of receiving a called strike than an away pitcher.
+ The subtle differences in spatial patterns across the different values
+ of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{p
+\backslash
+_throws}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{stand}
+\end_layout
+
+\end_inset
+
+ are interesting as well.
+ For instance, pitching at home has a large positive impact for a left-handed
+ pitcher throwing in the lower inside portion of the strike-zone to a right-hand
+ed batter, but the impact seems negligible in the mirror opposite case.
+\end_layout
+
+\begin_layout Standard
+Differenced probabilistic densities are clearly an interesting visual tool
+ for analyzing PITCHf/x data.
+ With 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{strikeFX}
+\end_layout
+
+\end_inset
+
+, one can quickly and easily make all sorts of visual comparisons for various
+ situations.
+ In fact, one can explore and compare the probabilistic structure of any
+ well-defined event over a strike-zone region (for example, the probability
+ a batter reaches base) using a similar approach.
+ 
+\end_layout
+
+\begin_layout Subsection
+2D animation
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{animateFX}
+\end_layout
+
+\end_inset
+
+ provides convenient and flexible functionality for animating the trajectory
+ of any desired set of pitches.
+ For demonstration purposes, this section animates every four-seam and cut
+ fastball thrown by Mariano Rivera and Phil Hughes during the 2011 season.
+ These pitches provide a good example of how facets play an important role
+ in extracting new insights.
+ Similar methods can be used to analyze any MLB player (or combination of
+ players) in greater detail.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{animateFX}
+\end_layout
+
+\end_inset
+
+ tracks three dimensional pitch locations over a sequence of two dimensional
+ plots.
+ The animation takes on the viewpoint of the umpire; that is, each time
+ the plot refreshes, the balls are getting closer to the viewer.
+ This is reflected with the increase in size of the points as the animation
+ progresses.
+ Obviously, some pitches travel faster than others, which explains the different
+ sizes within the same frame.
+ Note that animations in this paper revert to the initial point of release
+ once 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+emph{all}
+\end_layout
+
+\end_inset
+
+ of the baseballs have reached home plate.
+ During an interactive session, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{animateFX}
+\end_layout
+
+\end_inset
+
+ produces a series of plots that may not viewed easily.
+ One option available to the user is to wrap 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{animation::saveHTML}
+\end_layout
+
+\end_inset
+
+ around 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{animateFX}
+\end_layout
+
+\end_inset
+
+ to view the animation in a browser with proper looping controls 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "animation"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To reduce the time and thinking required to produce these animations, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{animateFX}
+\end_layout
+
+\end_inset
+
+ has default settings for the geometry, color, opacity and size associated
+ with each plot.
+ Any of these assumptions can be altered - except for the point geometry.
+ In order for animations to work, a data frame with the appropriately named
+ PITCHf/x parameters (that is, x0, y0, z0, vx0, vy0, vz0, ax0, ay0 and az0)
+ is required.
+ In Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:animate1"
+
+\end_inset
+
+, every four-seam and cut fastball thrown by Rivera and Hughes during the
+ 2011 season is visualized using the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitches}
+\end_layout
+
+\end_inset
+
+ data frame obtained earlier.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<fns, echo=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+relabel <- function(variable, value) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+  value <- sub("^R$", "Right-Handed Batter", value) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  sub("^L$", "Left-Handed Batter", value) 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<all, echo=TRUE, fig.show='animate', aniopts='controls,loop,autoplay', interval=
+0.05, fig.height=8, cache=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+animateFX(pitches, layer=list(theme_bw(), coord_equal(),
+\end_layout
+
+\begin_layout Plain Layout
+
+  facet_grid(pitcher_name~stand, labeller = relabel)))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:animate1"
+
+\end_inset
+
+Animation of every four-seam and cutting fastballs thrown by NY Yankee pitchers
+ Mariano Rivera and Phil Hughes during the 2011 season.
+ Pitches are faceted by pitcher and batting stance.
+ For instance, the top left plot portrays pitches thrown by Rivera to left-hande
+d batters.
+ Animations are intentionally slower than real-time for visual recognition
+ and should be viewed within 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+protect
+\backslash
+href{http://get.adobe.com/reader/}{Adobe Reader}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "knitr"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The upper right-hand plot of Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:animate1"
+
+\end_inset
+
+ (Rivera throwing to right-handed batters) reveals the clearest pattern
+ in flight trajectories.
+ Around the point of release, Rivera's two pitch types are hard to distinguish.
+ However, after a certain point, there is a very different flight path among
+ the two pitch types.
+ Specifically, the drastic left-to-right movement of the cut fastball is
+ noticeably different from the slight right-to-left movement of the four-seam
+ fastball.
+ In recent years, cut fastballs have gained notoriety among the baseball
+ community as a coveted pitch for pitchers have at their disposal.
+ This is largely due to the difficulty that a batter has in distinguishing
+ the cut fastball from another fastball as the ball travels toward home
+ plate.
+ Clearly, this presents an advantage for the pitcher since they can use
+ deception to reduce batter's ability to predict where the ball will cross
+ home plate.
+ This deception factor combined with Rivera's ability to locate his pitches
+ explain his accolades as one of the greatest pitchers of all time 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "NYT"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Although we see a clear pattern in Rivera's pitches, MLB pitchers are hardly
+ ever that predictable.
+ Animating that many pitches for another pitcher can produce a very cluttered
+ graphic which is hard to interpret (especially when many pitch types are
+ considered).
+ However, we may still want to obtain an indication of pitch trajectory
+ over a set of many pitches.
+ A way to achieve this is to average over the PITCHf/x parameters to produce
+ an overall sense of pitch type behavior (via the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{avg.by}
+\end_layout
+
+\end_inset
+
+ option).
+ Note that the facet variables are automatically considered indexing variables.
+ That is, in Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:animate2"
+
+\end_inset
+
+, there are eight 'average' pitches since there are two pitch types, two
+ pitchers, and two types of batting stance.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<avg, echo=TRUE, fig.show='animate', aniopts='controls,loop,autoplay', interval=
+0.05, fig.height=8, cache=TRUE>>= 
+\end_layout
+
+\begin_layout Plain Layout
+
+animateFX(pitches, avg.by = "pitch_types", layer = list(coord_equal(), theme_bw()
+,
+\end_layout
+
+\begin_layout Plain Layout
+
+  facet_grid(pitcher_name~stand, labeller = relabel)))
+\end_layout
+
+\begin_layout Plain Layout
+
+@ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:animate2"
+
+\end_inset
+
+Animation of 'average' four-seam and cutting fastballs thrown by NY Yankee
+ pitchers Mariano Rivera and Phil Hughes during the 2011 season.
+ PITCHf/x parameters are averaged over pitch type, pitcher and batting stance.
+ For instance, the bottom right plot portrays an 
+\begin_inset Quotes eld
+\end_inset
+
+average four-seam
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+average cutter
+\begin_inset Quotes erd
+\end_inset
+
+ thrown by Hughes to right-handed batters.
+ Animations are intentionally slower than real-time for visual recognition
+ and should be viewed within 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+protect
+\backslash
+href{http://get.adobe.com/reader/}{Adobe Reader}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Interactive 3D graphics
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{rgl}
+\end_layout
+
+\end_inset
+
+ is an R package that utilizes OpenGL for graphics rendering.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{interactiveFX}
+\end_layout
+
+\end_inset
+
+ utilizes 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{rgl}
+\end_layout
+
+\end_inset
+
+ functionality to reproduce flight paths on an interactive 3D platform.
+ Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:rgl"
+
+\end_inset
+
+ has two static pictures of Mariano Rivera's 2011 fastballs on this interactive
+ platform.
+ This is great for gaining new perspectives on a certain set of pitches,
+ since the trajectories can be viewed from any angle.
+ Figure
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+~
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:rgl"
+
+\end_inset
+
+ showcases the difference in trajectory between Rivera's pitch types.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<rgl, eval=FALSE>>= 
+\end_layout
+
+\begin_layout Plain Layout
+
+Rivera <- subset(pitches, pitcher_name == "Mariano Rivera")
+\end_layout
+
+\begin_layout Plain Layout
+
+interactiveFX(Rivera, avg.by = "pitch_types")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "45text%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = .45]{rgl_b.png}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hspace*{\fill}
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "45text%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = .45]{rgl_a.png}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+3D scatterplot of pitches from Rivera.
+ Pitches are plotted every one-hundredth of a second.
+ Cutting fastballs are shown in red and four-seam fastballs are shown in
+ blue.
+ The left hand plot takes a viewpoint of Rivera and the right hand plot
+ takes a viewpoint near the umpire.
+ Note these are static pictures of an interactive object.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:rgl"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ utilizes 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+'s convenient framework for manipulating XML content in order to provide
+ easy access to PITCHf/x and related Gameday data.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ removes access barriers which allows the average R user and baseball fan
+ to spend their valuable time analyzing Gameday's enormous source of baseball
+ information.
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ also provides a suite of functions that greatly reduce the amount of work
+ involved to create popular PITCHf/x graphics.
+ For those interested in obtaining other XML data, 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{pitchRx}
+\end_layout
+
+\end_inset
+
+ serves as a nice example of leveraging 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+pkg{XML2R}
+\end_layout
+
+\end_inset
+
+ to quickly assemble custom XML data collection mechanisms.
+\end_layout
+
+\begin_layout Section
+Acknowledgements
+\end_layout
+
+\begin_layout Standard
+Many thanks to my major professor, Dr.
+ Heike Hofmann, for her direction and support throughout this project.
+ Thanks also to the anonymous reviewers for helpful feedback.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+When you insert BibTeX bibliography here, do not use any bib styles.
+ The R Journal has declared the style to be 
+\begin_inset Quotes eld
+\end_inset
+
+abbrvnat
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "sievert"
+options "plainnat"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex Address
+status collapsed
+
+\begin_layout Plain Layout
+Carson Sievert
+\begin_inset Newline newline
+\end_inset
+
+Department of Statistics
+\begin_inset Newline newline
+\end_inset
+
+Iowa State University
+\end_layout
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Flex Email
+status collapsed
+
+\begin_layout Plain Layout
+sievert@iastate.edu
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{article}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Note 
+\backslash
+begin{article} in the beginning of this article; now we close the 
+\begin_inset Quotes eld
+\end_inset
+
+article
+\begin_inset Quotes erd
+\end_inset
+
+ environment.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
