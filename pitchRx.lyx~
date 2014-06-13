@@ -155,7 +155,7 @@ library(devtools)
 
 \begin_layout Plain Layout
 
-#install_github('pitchRx', 'cpsievert')
+#install_github('cpsievert/pitchRx')
 \end_layout
 
 \begin_layout Plain Layout
@@ -165,7 +165,7 @@ library(pitchRx)
 
 \begin_layout Plain Layout
 
-#install_github('XML2R', 'cpsievert')
+#install_github('cpsievert/XML2R')
 \end_layout
 
 \begin_layout Plain Layout
@@ -2140,7 +2140,7 @@ status open
 
 \begin_layout Plain Layout
 
-<<extract, cache=TRUE>>=
+<<extract, cache=TRUE, results='hide'>>=
 \end_layout
 
 \begin_layout Plain Layout
@@ -2156,6 +2156,41 @@ files <- paste0(urls, "/inning/inning_all.xml")
 \begin_layout Plain Layout
 
 obs <- XML2Obs(files, url.map = TRUE, quiet = TRUE) 
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace{-.45cm}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<nms>>=
 \end_layout
 
 \begin_layout Plain Layout
@@ -5431,7 +5466,7 @@ relabel2 <- function(variable, value) {
 
 \begin_layout Plain Layout
 
-    sub("^R$", "Right-Handed Batter", value)))   
+      sub("^R$", "Right-Handed Batter", value)))   
 \end_layout
 
 \begin_layout Plain Layout
@@ -5446,7 +5481,7 @@ relabel2 <- function(variable, value) {
 
 \begin_layout Plain Layout
 
-    sub("^R$", "Right-Handed Pitcher", value))) 
+      sub("^R$", "Right-Handed Pitcher", value))) 
 \end_layout
 
 \begin_layout Plain Layout
@@ -5817,27 +5852,17 @@ status open
 
 \begin_layout Plain Layout
 
-<<fns, echo=FALSE>>=
+<<ani1, echo=TRUE, eval=FALSE>>=
 \end_layout
 
 \begin_layout Plain Layout
 
-relabel <- function(variable, value) { 
+animateFX(pitches, layer=list(theme_bw(), coord_equal(),
 \end_layout
 
 \begin_layout Plain Layout
 
-  value <- sub("^R$", "Right-Handed Batter", value) 
-\end_layout
-
-\begin_layout Plain Layout
-
-  sub("^L$", "Left-Handed Batter", value) 
-\end_layout
-
-\begin_layout Plain Layout
-
-}
+  facet_grid(pitcher_name~stand, labeller = relabel)))
 \end_layout
 
 \begin_layout Plain Layout
@@ -5863,23 +5888,11 @@ status open
 
 \begin_layout Plain Layout
 
-<<all, echo=TRUE, fig.show='animate', aniopts='controls,loop,autoplay', interval=
-0.05, fig.height=8, cache=TRUE>>=
-\end_layout
 
-\begin_layout Plain Layout
-
-animateFX(pitches, layer=list(theme_bw(), coord_equal(),
-\end_layout
-
-\begin_layout Plain Layout
-
-  facet_grid(pitcher_name~stand, labeller = relabel)))
-\end_layout
-
-\begin_layout Plain Layout
-
-@
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 1]{ani1-frame.pdf}}
 \end_layout
 
 \end_inset
@@ -5897,13 +5910,10 @@ name "fig:animate1"
 
 \end_inset
 
-Animation of every four-seam and cutting fastballs thrown by NY Yankee pitchers
- Mariano Rivera and Phil Hughes during the 2011 season.
- Pitches are faceted by pitcher and batting stance.
- For instance, the top left plot portrays pitches thrown by Rivera to left-hande
-d batters.
- Animations are intentionally slower than real-time for visual recognition
- and should be viewed within 
+The last frame of an animation of every four-seam and cutting fastballs
+ thrown by NY Yankee pitchers Mariano Rivera and Phil Hughes during the
+ 2011 season.
+ The actual animation can be viewed 
 \begin_inset ERT
 status open
 
@@ -5913,19 +5923,15 @@ status open
 \backslash
 protect
 \backslash
-href{http://get.adobe.com/reader/}{Adobe Reader}
+href{http://cpsievert.github.io/pitchRx/ani1}{here}
 \end_layout
 
 \end_inset
 
- 
-\begin_inset CommandInset citation
-LatexCommand citep
-key "knitr"
-
-\end_inset
-
 .
+ Pitches are faceted by pitcher and batting stance.
+ For instance, the top left plot portrays pitches thrown by Rivera to left-hande
+d batters.
 \end_layout
 
 \end_inset
@@ -5939,7 +5945,20 @@ key "knitr"
 \end_layout
 
 \begin_layout Standard
-The upper right-hand plot of Figure
+In 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+href{http://cpsievert.github.io/pitchRx/ani1}{the animation}
+\end_layout
+
+\end_inset
+
+ corresponding to Figure
 \begin_inset ERT
 status open
 
@@ -5957,8 +5976,8 @@ reference "fig:animate1"
 
 \end_inset
 
- (Rivera throwing to right-handed batters) reveals the clearest pattern
- in flight trajectories.
+, the upper right-hand portion (Rivera throwing to right-handed batters)
+ reveals the clearest pattern in flight trajectories.
  Around the point of release, Rivera's two pitch types are hard to distinguish.
  However, after a certain point, there is a very different flight path among
  the two pitch types.
@@ -6031,20 +6050,12 @@ reference "fig:animate2"
 \end_layout
 
 \begin_layout Standard
-\begin_inset Float figure
-placement h
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
 \begin_inset ERT
 status open
 
 \begin_layout Plain Layout
 
-<<avg, echo=TRUE, fig.show='animate', aniopts='controls,loop,autoplay', interval=
-0.05, fig.height=8, cache=TRUE>>= 
+<<ani2, echo=TRUE, eval=FALSE>>= 
 \end_layout
 
 \begin_layout Plain Layout
@@ -6068,6 +6079,31 @@ animateFX(pitches, avg.by = "pitch_types", layer = list(coord_equal(), theme_bw(
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+centerline{
+\backslash
+includegraphics[scale = 1]{ani2-frame.pdf}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Plain Layout
 \begin_inset Caption
 
@@ -6078,8 +6114,25 @@ name "fig:animate2"
 
 \end_inset
 
-Animation of 'average' four-seam and cutting fastballs thrown by NY Yankee
- pitchers Mariano Rivera and Phil Hughes during the 2011 season.
+The last frame of an animation of 'averaged' four-seam and cutting fastballs
+ thrown by NY Yankee pitchers Mariano Rivera and Phil Hughes during the
+ 2011 season.
+ The actual animation can be viewed 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+protect
+\backslash
+href{http://cpsievert.github.io/pitchRx/ani2}{here}
+\end_layout
+
+\end_inset
+
+.
  PITCHf/x parameters are averaged over pitch type, pitcher and batting stance.
  For instance, the bottom right plot portrays an 
 \begin_inset Quotes eld
@@ -6098,23 +6151,7 @@ average cutter
 \end_inset
 
  thrown by Hughes to right-handed batters.
- Animations are intentionally slower than real-time for visual recognition
- and should be viewed within 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-protect
-\backslash
-href{http://get.adobe.com/reader/}{Adobe Reader}
-\end_layout
-
-\end_inset
-
-.
+ 
 \end_layout
 
 \end_inset

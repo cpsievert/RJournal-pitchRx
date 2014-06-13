@@ -3,7 +3,6 @@
 
 
 
-
 \title{Taming PITCHf/x Data with \pkg{XML2R} and \pkg{pitchRx}}
 
 
@@ -264,6 +263,7 @@ sub("http://gd2.mlb.com/components/game/mlb/", "", head(urls))
 %
 
 \subsection{Extracting observations}
+
 Once we have a collection of XML \code{files}, the next step is to
 parse the content into a list of \dfn{observations}. An observation
 is technically defined as a matrix with one row and some number of
@@ -277,30 +277,36 @@ a sensible fashion at a later point.
 library(XML2R)
 files <- paste0(urls, "/inning/inning_all.xml")
 obs <- XML2Obs(files, url.map = TRUE, quiet = TRUE) 
+\end{Sinput}
+\end{Schunk}
+%
+\vspace{-.45cm}
+%
+\begin{Schunk}
+\begin{Sinput}
 table(names(obs))
 \end{Sinput}
 \begin{Soutput}
 
                                game                        game//inning 
-                                 15                                 137 
+                                  2                                  18 
        game//inning//bottom//action         game//inning//bottom//atbat 
-                                116                                 532 
+                                 13                                  69 
  game//inning//bottom//atbat//pitch     game//inning//bottom//atbat//po 
-                               1978                                  61 
+                                247                                   4 
 game//inning//bottom//atbat//runner           game//inning//top//action 
-                                373                                 150 
+                                 50                                  20 
            game//inning//top//atbat     game//inning//top//atbat//pitch 
-                                593                                2183 
+                                 79                                 278 
        game//inning//top//atbat//po    game//inning//top//atbat//runner 
-                                 75                                 509 
+                                 17                                  89 
                             url_map 
                                   1 
 \end{Soutput}
 \end{Schunk}
 %
-
-This output tells us that 1978
-pitches were thrown in the bottom inning and 2183
+This output tells us that 247
+pitches were thrown in the bottom inning and 278
 were thrown in the top inning on June 1st, 2011. Also, there are 12
 different levels of observations. The list element named \code{url\_map}
 is not considered an observation and was included since \code{url.map = TRUE}.
@@ -314,25 +320,24 @@ obs[c(1, 2500)]
 \begin{Soutput}
 $`game//inning//top//atbat//pitch`
      des             id  type tfs      tfs_zulu               x        y       
-[1,] "Called Strike" "3" "S"  "161107" "2011-06-01T20:11:07Z" "103.00" "149.38"
-     sv_id           start_speed end_speed sz_top sz_bot pfx_x   pfx_z 
-[1,] "110601_151108" "94.0"      "86.1"    "2.85" "1.36" "-8.12" "11.0"
-     px       pz      x0       y0     z0      vx0     vy0        vz0     
-[1,] "-0.143" "2.376" "-2.435" "50.0" "5.831" "9.058" "-137.334" "-7.288"
-     ax        ay       az        break_y break_angle break_length pitch_type
-[1,] "-15.446" "31.474" "-11.175" "23.8"  "46.3"      "4.0"        "FT"      
+[1,] "Called Strike" "3" "S"  "191018" "2011-06-01T23:10:18Z" "109.87" "145.06"
+     sv_id           start_speed end_speed sz_top sz_bot pfx_x  pfx_z  px      
+[1,] "110601_191020" "87.9"      "82.1"    "3.6"  "1.65" "-6.7" "4.36" "-0.213"
+     pz      x0       y0     z0      vx0     vy0        vz0      ax       
+[1,] "2.611" "-1.612" "50.0" "5.633" "5.808" "-128.728" "-2.903" "-11.406"
+     ay       az        break_y break_angle break_length pitch_type
+[1,] "22.954" "-24.681" "23.9"  "22.5"      "6.5"        "SI"      
      type_confidence zone nasty spin_dir  spin_rate  cc mt url_key
-[1,] ".909"          "2"  "39"  "216.336" "2753.789" "" "" "url1" 
+[1,] ".798"          "5"  "39"  "236.697" "1538.041" "" "" "url1" 
 
-$`game//inning//bottom//atbat//runner`
-     id       start end  event         url_key
-[1,] "471083" "2B"  "3B" "Field Error" "url6" 
+$<NA>
+NULL
 \end{Soutput}
 \end{Schunk}
 %
 
-
 \subsection{Renaming observations}
+
 Before grouping observations into a collection tables based on their
 names, one may want to \code{re\_name} observations. Observations
 with names \code{'game//inning//bottom//atbat'} and \code{'game//inning//top//atbat'}
@@ -346,7 +351,6 @@ tmp <- re_name(obs, equiv = c("game//inning//top//atbat",
 \end{Sinput}
 \end{Schunk}
 %
-
 By passing these names to the \code{equiv} argument, \code{re\_name}
 determines the difference in the naming scheme and suppresses that
 difference. In other words, observation names that match the \code{equiv}
@@ -363,25 +367,26 @@ tmp[grep("game//inning//atbat", names(tmp))][1:2]
 \begin{Soutput}
 $`game//inning//atbat`
      num b   s   o   start_tfs start_tfs_zulu         batter   stand b_height
-[1,] "1" "3" "2" "0" "161034"  "2011-06-01T20:10:34Z" "430947" "L"   "5-10"  
+[1,] "1" "0" "1" "0" "190935"  "2011-06-01T23:09:35Z" "430001" "R"   "5-10"  
      pitcher  p_throws
-[1,] "462956" "R"     
-     des                                                                     
-[1,] "Erick Aybar singles on a line drive to center fielder Melky Cabrera.  "
-     event    url_key inning_side
-[1,] "Single" "url1"  "top"      
+[1,] "502190" "R"     
+     des                                                       event      score
+[1,] "Rickie Weeks homers (10) on a fly ball to left field.  " "Home Run" "T"  
+     home_team_runs away_team_runs url_key inning_side
+[1,] "0"            "1"            "url1"  "top"      
 
 $`game//inning//atbat`
      num b   s   o   start_tfs start_tfs_zulu         batter   stand b_height
-[1,] "2" "2" "3" "1" "161412"  "2011-06-01T20:14:12Z" "110029" "L"   "6-0"   
-     pitcher  p_throws des                                    event      
-[1,] "462956" "R"      "Bobby Abreu called out on strikes.  " "Strikeout"
-     url_key inning_side
-[1,] "url1"  "top"      
+[1,] "2" "0" "0" "0" "191105"  "2011-06-01T23:11:05Z" "460579" "L"   "6-0"   
+     pitcher  p_throws
+[1,] "502190" "R"     
+     des                                                                     
+[1,] "Nyjer Morgan triples (3) on a line drive to right fielder Jay Bruce.  "
+     event    url_key inning_side
+[1,] "Triple" "url1"  "top"      
 \end{Soutput}
 \end{Schunk}
 %
-
 For similar reasons, other observation name pairs are renamed in a
 similar fashion.
 %
@@ -400,17 +405,16 @@ table(names(obs2))
 \begin{Soutput}
 
                        game                game//inning 
-                         15                         137 
+                          2                          18 
        game//inning//action         game//inning//atbat 
-                        266                        1125 
+                         33                         148 
  game//inning//atbat//pitch     game//inning//atbat//po 
-                       4161                         136 
+                        525                          21 
 game//inning//atbat//runner                     url_map 
-                        882                           1 
+                        139                           1 
 \end{Soutput}
 \end{Schunk}
 %
-
 
 \subsection{Linking observations}
 
@@ -425,19 +429,18 @@ obs2[grep("^game//inning$", names(obs2))][1:3]
 \begin{Soutput}
 $`game//inning`
      num away_team home_team next url_key
-[1,] "1" "ana"     "kca"     "Y"  "url1" 
+[1,] "1" "mil"     "cin"     "Y"  "url1" 
 
 $`game//inning`
      num away_team home_team next url_key
-[1,] "2" "ana"     "kca"     "Y"  "url1" 
+[1,] "2" "mil"     "cin"     "Y"  "url1" 
 
 $`game//inning`
      num away_team home_team next url_key
-[1,] "3" "ana"     "kca"     "Y"  "url1" 
+[1,] "3" "mil"     "cin"     "Y"  "url1" 
 \end{Soutput}
 \end{Schunk}
 %
-
 Before grouping observations into tables, it is usually important
 preserve the parent-to-child relationships in the XML lineage. For
 example, one may want to map a particular pitch back to the inning
@@ -454,12 +457,11 @@ A key for the following children will be generated for the game//inning node:
 game//inning//atbat//pitch
 game//inning//atbat//runner
 game//inning//atbat
-game//inning//action
 game//inning//atbat//po
+game//inning//action
 \end{Soutput}
 \end{Schunk}
 %
-
 As it turns out, the \code{away\_team} and \code{home\_team} columns
 are redundant as this information is embedded in the \code{url} column.
 Thus, there is only one other informative attribute on this level
@@ -475,12 +477,11 @@ A key for the following children will be generated for the game//inning node:
 game//inning//atbat//pitch
 game//inning//atbat//runner
 game//inning//atbat
-game//inning//action
 game//inning//atbat//po
+game//inning//action
 \end{Soutput}
 \end{Schunk}
 %
-
 It is also imperative that we can link a \code{pitch}, \code{runner},
 or \code{po} back to a particular \code{atbat}. This can be done
 as follows:
@@ -497,7 +498,6 @@ game//inning//atbat//po
 \end{Soutput}
 \end{Schunk}
 %
-
 
 \subsection{Collapsing observations}
 
@@ -519,24 +519,23 @@ tables <- setNames(tables, table.names)
 head(tables[["runner"]])
 \end{Sinput}
 \begin{Soutput}
-     id       start end  event                url_key inning_side inning next
-[1,] "430947" ""    "1B" "Single"             "url1"  "top"       "1"    "Y" 
-[2,] "430947" "1B"  "2B" "Stolen Base 2B"     "url1"  "top"       "1"    "Y" 
-[3,] "430947" "2B"  "3B" "Groundout"          "url1"  "top"       "1"    "Y" 
-[4,] "430947" "3B"  ""   "Groundout"          "url1"  "top"       "1"    "Y" 
-[5,] "543333" ""    "1B" "Single"             "url1"  "bottom"    "1"    "Y" 
-[6,] "543333" "1B"  ""   "Pickoff Attempt 1B" "url1"  "bottom"    "1"    "Y" 
-     num score rbi earned
-[1,] "1" NA    NA  NA    
-[2,] "2" NA    NA  NA    
-[3,] "3" NA    NA  NA    
-[4,] "4" NA    NA  NA    
-[5,] "7" NA    NA  NA    
-[6,] "8" NA    NA  NA    
+     id       start end  event       score rbi earned url_key inning_side
+[1,] "430001" ""    ""   "Home Run"  "T"   "T" "T"    "url1"  "top"      
+[2,] "460579" ""    "3B" "Triple"    NA    NA  NA     "url1"  "top"      
+[3,] "460579" "3B"  ""   "Groundout" "T"   "T" "T"    "url1"  "top"      
+[4,] "425902" ""    "1B" "Single"    NA    NA  NA     "url1"  "top"      
+[5,] "425902" "1B"  ""   "Pop Out"   NA    NA  NA     "url1"  "top"      
+[6,] "458015" ""    "1B" "Single"    NA    NA  NA     "url1"  "bottom"   
+     inning next num
+[1,] "1"    "Y"  "1"
+[2,] "1"    "Y"  "2"
+[3,] "1"    "Y"  "3"
+[4,] "1"    "Y"  "4"
+[5,] "1"    "Y"  "6"
+[6,] "1"    "Y"  "9"
 \end{Soutput}
 \end{Schunk}
 %
-
 
 \section[Collecting Gameday data with pitchRx]{Collecting Gameday data with \pkg{pitchRx}}
 
@@ -582,7 +581,6 @@ dat <- scrape(game.ids = gids11, suffix = files)
 \end{Sinput}
 \end{Schunk}
 %
-
 The object \code{dat} is a list of data frames containing all data
 available for June 1st, 2011 using \code{scrape}. The list names
 match the table names provided in Table~\ref{table:pitchfx}. For
@@ -596,6 +594,7 @@ of data is required, the user should exploit the R database interface
 
 
 \section{Storing and querying Gameday data}
+
 Since PITCHf/x data can easily exhaust random-access memory, one should
 consider establishing a database instance before using \code{scrape}.
 By passing a database connection to the \code{connect} argument,
@@ -617,7 +616,6 @@ scrape(start = "2008-01-01", end = "2014-01-01",
 \end{Sinput}
 \end{Schunk}
 %
-
 In the later sections, animations of four-seam and cut fastballs thrown
 by Mariano Rivera and Phil Hughes during the 2011 season are created.
 In order to obtain the necessary data, one must set criteria on: values
@@ -635,7 +633,6 @@ dbSendQuery(my_db$con, "CREATE INDEX des_index ON pitch(des)")
 \end{Sinput}
 \end{Schunk}
 %
-
 Although our desired query could be expressed entirely in SQL, \pkg{dplyr}'s
 grammar for data manipulation (which is database agnostic) can help
 to simplify the task. First, create \code{pitch11} and \code{atbat11}
@@ -668,10 +665,7 @@ pitches <- collect(inner_join(FBs, bats))
 \end{Sinput}
 \end{Schunk}
 %
-
-
 \section{Visualizing PITCHf/x}
-
 
 \subsection{Strike-zone plots and umpire bias}
 
@@ -687,7 +681,6 @@ most popular use is for addressing umpire bias in a strike versus
 ball decision \citet{bias}. The probabilistic plots section demonstrates
 how \pkg{pitchRx} simplifies the process behind creating such plots
 via a case study on the impact of home field advantage on umpire decisions.
-
 In the world of sports, it is a common belief that umpires (or referees)
 have a tendency to favor the home team. PITCHf/x provides a unique
 opportunity to add to this discussion by modeling the probability
@@ -719,7 +712,6 @@ decisions$strike <- as.numeric(decisions$des %in% "Called Strike")
 \end{Schunk}
 %
 
-
 \subsubsection{Density plots}
 
 The \code{decisions} data frame contains data on over 2.5 million
@@ -731,8 +723,8 @@ to this phenomenon; which we will not investigate here.
 %
 \begin{Schunk}
 \begin{Sinput}
-#strikeFX uses the stand variable to calculate strike-zones 
-#Here is a slick way to create better labels for stand without changing its values
+# strikeFX uses the stand variable to calculate strike-zones 
+# Here is a slick way to create better labels for stand without changing its values
 relabel <- function(variable, value) { 
   value <- sub("^R$", "Right-Handed Batter", value) 
   sub("^L$", "Left-Handed Batter", value) 
@@ -742,9 +734,9 @@ strikeFX(strikes, geom = "tile", layer = facet_grid(. ~ stand, labeller = relabe
 \end{Sinput}
 \end{Schunk}
 %
-
 \begin{figure}[h]
 \centerline{\includegraphics[scale = 1]{strikes.pdf}}
+
 \caption{\label{fig:STRIKES} Density of called strikes for right-handed batters
 and left-handed batters (from 2008 to 2013).}
 \end{figure}
@@ -779,7 +771,6 @@ strikeFX(decisions, geom = "tile", density1 = list(des = "Called Strike"),
 \end{Sinput}
 \end{Schunk}
 %
-
 In general, when \code{density1} and \code{density2} are identical,
 the result is equivalent to subsetting the data frame appropriately
 beforehand. More importantly, by specifying \emph{different} values
@@ -803,7 +794,6 @@ strikeFX(decisions, geom = "tile", density1 = list(des = "Called Strike"),
 \end{Sinput}
 \end{Schunk}
 %
-
 \begin{figure}[h]
 \centerline{\includegraphics[scale = 1]{strikesVSballs.pdf}}
 
@@ -848,7 +838,6 @@ m <- bam(strike ~ interaction(stand, p_throws, inning_side) +
 \end{Sinput}
 \end{Schunk}
 %
-
 This formula models the probability of a strike as a function of the
 baseball's spatial location, the batter's stance, the pitcher's throwing
 arm, and the side of the inning. Since home pitchers always pitch
@@ -858,7 +847,6 @@ case, the \code{interaction} function creates a factor with eight
 different levels since every input factor has two levels. Consequently,
 there are 8 different levels of smooth surfaces over the spatial region
 defined by \code{px} and \code{pz}.
-
 The fitted model \code{m} contains a lot of information which \code{strikeFX}
 uses in conjunction with any \pkg{ggplot2} facet commands to infer
 which and how surfaces should be plotted. In particular, the \code{var.summary}
@@ -879,7 +867,6 @@ strikeFX(decisions, model = m, layer = facet_grid(. ~ stand, labeller = relabel)
 \end{Sinput}
 \end{Schunk}
 %
-
 \begin{figure}[h]
 \centerline{\includegraphics[scale = 1]{prob-strike.pdf}}
 
@@ -898,21 +885,20 @@ one of the 8 surfaces are required in order to produce Figure~\ref{fig:diff-prob
 %
 \begin{Schunk}
 \begin{Sinput}
-#function to create better labels for both stand and p_throws
+# Function to create better labels for both stand and p_throws
 relabel2 <- function(variable, value) {    
   if (variable %in% "stand")      
     return(sub("^L$", "Left-Handed Batter",                 
-    sub("^R$", "Right-Handed Batter", value)))   
+      sub("^R$", "Right-Handed Batter", value)))   
   if (variable %in% "p_throws")      
     return(sub("^L$", "Left-Handed Pitcher",                 
-    sub("^R$", "Right-Handed Pitcher", value))) 
+      sub("^R$", "Right-Handed Pitcher", value))) 
 }
 strikeFX(decisions, model = m, layer = facet_grid(p_throws ~ stand, labeller = relabel2),
   density1 = list(inning_side = "top"), density2 = list(inning_side = "bottom"))
 \end{Sinput}
 \end{Schunk}
 %
-
 \begin{figure}[h]
 \centerline{\includegraphics[scale = 1]{prob-diff.pdf}}
 
@@ -982,47 +968,43 @@ work, a data frame with the appropriately named PITCHf/x parameters
 In Figure~\ref{fig:animate1}, every four-seam and cut fastball thrown
 by Rivera and Hughes during the 2011 season is visualized using the
 \code{pitches} data frame obtained earlier.
-
-
-
-
-\begin{figure}[h]
 %
 \begin{Schunk}
 \begin{Sinput}
 animateFX(pitches, layer=list(theme_bw(), coord_equal(),
   facet_grid(pitcher_name~stand, labeller = relabel)))
 \end{Sinput}
-
-\animategraphics[width=1.05\textwidth,controls,loop,autoplay]{20}{figure/all}{1}{45}\end{Schunk}
+\end{Schunk}
 %
+\begin{figure}[h]
+\centerline{\includegraphics[scale = 1]{ani1-frame.pdf}}
 
-\caption{\label{fig:animate1}Animation of every four-seam and cutting fastballs
-thrown by NY Yankee pitchers Mariano Rivera and Phil Hughes during
-the 2011 season. Pitches are faceted by pitcher and batting stance.
-For instance, the top left plot portrays pitches thrown by Rivera
-to left-handed batters. Animations are intentionally slower than real-time
-for visual recognition and should be viewed within \protect\href{http://get.adobe.com/reader/}{Adobe Reader}
-\citep{knitr}.}
+\caption{\label{fig:animate1}The last frame of an animation of every four-seam
+and cutting fastballs thrown by NY Yankee pitchers Mariano Rivera
+and Phil Hughes during the 2011 season. The actual animation can be
+viewed \protect\href{http://cpsievert.github.io/pitchRx/ani1}{here}.
+Pitches are faceted by pitcher and batting stance. For instance, the
+top left plot portrays pitches thrown by Rivera to left-handed batters.}
 \end{figure}
 
 
-The upper right-hand plot of Figure~\ref{fig:animate1} (Rivera throwing
-to right-handed batters) reveals the clearest pattern in flight trajectories.
-Around the point of release, Rivera's two pitch types are hard to
-distinguish. However, after a certain point, there is a very different
-flight path among the two pitch types. Specifically, the drastic left-to-right
-movement of the cut fastball is noticeably different from the slight
-right-to-left movement of the four-seam fastball. In recent years,
-cut fastballs have gained notoriety among the baseball community as
-a coveted pitch for pitchers have at their disposal. This is largely
-due to the difficulty that a batter has in distinguishing the cut
-fastball from another fastball as the ball travels toward home plate.
-Clearly, this presents an advantage for the pitcher since they can
-use deception to reduce batter's ability to predict where the ball
-will cross home plate. This deception factor combined with Rivera's
-ability to locate his pitches explain his accolades as one of the
-greatest pitchers of all time \citep{NYT}.
+In \href{http://cpsievert.github.io/pitchRx/ani1}{the animation}
+corresponding to Figure~\ref{fig:animate1}, the upper right-hand
+portion (Rivera throwing to right-handed batters) reveals the clearest
+pattern in flight trajectories. Around the point of release, Rivera's
+two pitch types are hard to distinguish. However, after a certain
+point, there is a very different flight path among the two pitch types.
+Specifically, the drastic left-to-right movement of the cut fastball
+is noticeably different from the slight right-to-left movement of
+the four-seam fastball. In recent years, cut fastballs have gained
+notoriety among the baseball community as a coveted pitch for pitchers
+have at their disposal. This is largely due to the difficulty that
+a batter has in distinguishing the cut fastball from another fastball
+as the ball travels toward home plate. Clearly, this presents an advantage
+for the pitcher since they can use deception to reduce batter's ability
+to predict where the ball will cross home plate. This deception factor
+combined with Rivera's ability to locate his pitches explain his accolades
+as one of the greatest pitchers of all time \citep{NYT}.
 
 Although we see a clear pattern in Rivera's pitches, MLB pitchers
 are hardly ever that predictable. Animating that many pitches for
@@ -1035,26 +1017,25 @@ PITCHf/x parameters to produce an overall sense of pitch type behavior
 automatically considered indexing variables. That is, in Figure~\ref{fig:animate2},
 there are eight 'average' pitches since there are two pitch types,
 two pitchers, and two types of batting stance.
-
-\begin{figure}[h]
 %
 \begin{Schunk}
 \begin{Sinput}
 animateFX(pitches, avg.by = "pitch_types", layer = list(coord_equal(), theme_bw(),
   facet_grid(pitcher_name~stand, labeller = relabel)))
 \end{Sinput}
-
-\animategraphics[width=1.05\textwidth,controls,loop,autoplay]{20}{figure/avg}{1}{41}\end{Schunk}
+\end{Schunk}
 %
+\begin{figure}[h]
+\centerline{\includegraphics[scale = 1]{ani2-frame.pdf}}
 
-\caption{\label{fig:animate2}Animation of 'average' four-seam and cutting
-fastballs thrown by NY Yankee pitchers Mariano Rivera and Phil Hughes
-during the 2011 season. PITCHf/x parameters are averaged over pitch
-type, pitcher and batting stance. For instance, the bottom right plot
-portrays an ``average four-seam'' and ``average cutter'' thrown
-by Hughes to right-handed batters. Animations are intentionally slower
-than real-time for visual recognition and should be viewed within
-\protect\href{http://get.adobe.com/reader/}{Adobe Reader}.}
+\caption{\label{fig:animate2}The last frame of an animation of 'averaged'
+four-seam and cutting fastballs thrown by NY Yankee pitchers Mariano
+Rivera and Phil Hughes during the 2011 season. The actual animation
+can be viewed \protect\href{http://cpsievert.github.io/pitchRx/ani2}{here}.
+PITCHf/x parameters are averaged over pitch type, pitcher and batting
+stance. For instance, the bottom right plot portrays an ``average
+four-seam'' and ``average cutter'' thrown by Hughes to right-handed
+batters. }
 \end{figure}
 
 
@@ -1077,7 +1058,6 @@ interactiveFX(Rivera, avg.by = "pitch_types")
 \end{Sinput}
 \end{Schunk}
 %
-
 \begin{figure}[h]
 \begin{minipage}[t]{0.45\textwidth}%
 \centerline{\includegraphics[scale = .45]{rgl_b.png}}%
@@ -1092,8 +1072,10 @@ are shown in blue. The left hand plot takes a viewpoint of Rivera
 and the right hand plot takes a viewpoint near the umpire. Note these
 are static pictures of an interactive object. \label{fig:rgl}}
 \end{figure}
-\section{Conclusion}
 
+
+
+\section{Conclusion}
 \pkg{pitchRx} utilizes \pkg{XML2R}'s convenient framework for manipulating
 XML content in order to provide easy access to PITCHf/x and related
 Gameday data. \pkg{pitchRx} removes access barriers which allows
@@ -1109,7 +1091,9 @@ mechanisms.
 
 Many thanks to my major professor, Dr. Heike Hofmann, for her direction
 and support throughout this project. Thanks also to the anonymous
-reviewers for helpful feedback.
+reviewers for helpful feedback. This document was created using the
+\CRANpkg{knitr} package \citet{knitr}.
+
 
 
 \bibliography{sievert}
