@@ -1,74 +1,47 @@
 library(pitchRx)
-library(XML2R)
-if (sessionInfo()$otherPkgs$XML2R$Version != "0.0.4") message("Please install the newest version of XML2R")
-if (sessionInfo()$otherPkgs$pitchRx$Version < 1) message("Please install the newest version of pitchRx")
-#load other necessary packages
+# This script requires pitchRx 1.5
+if (packageVersion("pitchRx") < 1.5) { devtools::install_github("cpsievert/pitchRx"); library(pitchRx) }
 library(dplyr)
 library(DBI)
-library(parallel)
-library(rgl)
-library(animation)
-library(mgcv)
+library(magrittr)
 
-###########################################################################################
-#This is my recommended way to collect and store all data from 2008 to 2013 in a database:
-#Note that by writing to database, memory will be less of an issue (thus, better run time)!
-###########################################################################################
-my_db <- src_sqlite("GamedayDB.sqlite3", create=TRUE)
-#This collects and stores all PITCHf/x
-scrape(start="2008-01-01", end="2014-01-01", connect=my_db$con)
-#Now grab other 'complementary' files
-files <- c("inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
-scrape(start="2008-01-01", end="2014-01-01", suffix=files, connect=my_db$con)
+# This database was created using the technique described here -- http://baseballwithr.wordpress.com/2014/03/24/422/
+db <- src_sqlite("~/pitchfx/pitchRx.sqlite3")
 
-###########################################################################################
-#Here is a function that creates an SQLite database in the current directory, then
-#collects and stores all data for a particular year in that database
-#NOTE: If your machine has a lot of memory, you save some time by running store() in multiple R sessions concurrently!
-#DISCLAIMER: If you do this, you will have 'annual' databases, and combining them into one database is not trivial.
-###########################################################################################
-store <- function(year="2008"){
-  my_db <<- src_sqlite(paste0("Gameday", year, ".sqlite3"), create=TRUE)
-  files <- c("inning/inning_all.xml", "inning/inning_hit.xml",
-              "miniscoreboard.xml", "players.xml")
-  scrape(start=paste0(year, "-01-01"), end=paste0(year, "-12-31"), suffix=files, connect=my_db$con)
-}
-#Collects and stores data for 2008
-store()
-#Collects and stores data for 2009
-store("2009")
+dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
+dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+dbSendQuery(db$con, "CREATE INDEX date_atbat ON atbat(date)") 
+dbSendQuery(db$con, 'CREATE INDEX pitch_join ON pitch(gameday_link, num)')
+dbSendQuery(db$con, 'CREATE INDEX atbat_join ON atbat(gameday_link, num)')
 
-###########################################################################################
-#Generate example dataset from 'my_db' which is local and has data from 2008 to 2013
-###########################################################################################
-#First create some table indices for faster queries
-dbSendQuery(my_db$con, "CREATE INDEX url_atbat ON atbat(url)")
-dbSendQuery(my_db$con, "CREATE INDEX url_pitch ON pitch(url)") 
-dbSendQuery(my_db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
-dbSendQuery(my_db$con, "CREATE INDEX des_index ON pitch(des)")
-#Now build actual query
-pitch11 <- tbl(my_db, sql("SELECT * FROM pitch WHERE pitch.url LIKE '%year_2011%'"))
-atbat11 <- tbl(my_db, sql("SELECT * FROM atbat WHERE atbat.url LIKE '%year_2011%'"))
-bats <- filter(atbat11, pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
-FBs <- filter(pitch11, pitch_type == "FF" | pitch_type == "FC")
-pitches <- collect(inner_join(FBs, bats))
-
-###########################################################################################
-#Grab all 'decisions' made from 2008 to 2013 (used to create figures)
-###########################################################################################
-pitch <- tbl(my_db, "pitch")
-dez <- filter(select(pitch, px, pz, des, num, url), 
-              des == "Called Strike" | des == "Ball")
-atbat <- tbl(my_db, "atbat")
-atbats <- select(atbat, inning_side, stand, p_throws, b_height, num, url)
-decisions <- collect(inner_join(dez, atbats))
-#write.csv(decisions, file="~/Desktop/RJournal-pitchRx/decisions.csv", row.names=FALSE)
-#decisions <- read.csv("~/Desktop/RJournal-pitchRx/decisions.csv", header=TRUE, stringsAsFactors=FALSE)
-
+# Grad first 'example' data set 
+at.bat <- tbl(db, "atbat") %>%   
+  filter(pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
+  
+fbs <- tbl(db, "pitch") %>%   
+  filter(pitch_type == "FF" | pitch_type == "FC")
+  
+pitches <- inner_join(fbs, at.bat) %>% 
+  filter(date >= "2011_01_01" & date <= "2012_01_01") %>%
+  collect()
+  
+# Every 'decision' made from 2008 to 2013
+pitch <- tbl(db, "pitch") %>%
+  filter(des == "Called Strike" | des == "Ball") %>%
+# Keep pitch location, descriptions 
+  select(px, pz, des, gameday_link, num) %>%
+# 0-1 indicator of strike/ball
+  mutate(strike = as.numeric(des == "Called Strike"))
+  
+atbat <- tbl(db, "atbat") %>%
+# Most of these variables will be used as covariates in probabilistic models
+  select(b_height, p_throws, stand, inning_side, date, gameday_link, num) %>%
+  filter(date <= "2014_01_01")
+decisions <- collect(inner_join(pitch, atbat))
 
 #Formatting needed for fitting models
-decisions$strike <- as.numeric(decisions$des %in% "Called Strike")
-decisions$stance <- factor(decisions$stance)
+#decisions$strike <- as.numeric(decisions$des %in% "Called Strike")
+decisions$stand <- factor(decisions$stand)
 decisions$p_throws <- factor(decisions$p_throws)
 decisions$inning_side <- factor(decisions$inning_side)
 
@@ -84,13 +57,13 @@ relabel <- function(variable, value) {
 #figure 1
 pdf(file="strikes.pdf", width=6.5, height=3.5)
 strikes <- subset(decisions, strike == 1)
-strikeFX(strikes, geom = "tile", layer = facet_grid(.~stand, labeller = relabel))+coord_equal()
+strikeFX(strikes, geom = "raster", n = 25, layer = facet_grid(. ~ stand, labeller = relabel)) + coord_equal()
 dev.off()
 
 #figure 2
 pdf(file="strikesVSballs.pdf", width=6.5, height=3.5)
-strikeFX(decisions, geom="tile", density1 = list(des="Called Strike"), density2 = list(des="Ball"), 
-         layer=facet_grid(.~stand, labeller = relabel))+coord_equal()
+strikeFX(decisions, geom = "raster", density1 = list(des = "Called Strike"), 
+         density2 = list(des = "Ball"), layer = facet_grid(. ~ stand, labeller = relabel)) + coord_equal()
 dev.off()
 
 ################################################################################################
@@ -98,8 +71,8 @@ dev.off()
 # Use multiple cores to fit gams. Code altered from Brian Mills' work - http://princeofslides.blogspot.com/2013/07/advanced-sab-r-metrics-parallelization.html
 cl <- makeCluster(detectCores()-1)
 m <- bam(strike ~ interaction(stand, p_throws) + 
-              s(px, pz, by=interaction(stand, p_throws)), 
-            data=decisions, family = binomial(link='logit'))
+           s(px, pz, by=interaction(stand, p_throws)), 
+         data=decisions, family = binomial(link='logit'))
 var_summary <- m$var.summary
 #Save the model since it takes a while
 #save(m, file="~/Desktop/RJournal-pitchRx/decisions3rdOrder.rda")
@@ -128,6 +101,9 @@ relabel2 <- function(variable, value) {
 pdf(file="prob-diff.pdf", width=6.5, height=3.5)
 strikeFX(decisions, model = m, layer = facet_grid(p_throws~stand, labeller = relabel2),
          density1 = list(inning_side="top"), density2 = list(inning_side="bottom"))+coord_equal()
+# Older version used top_inning
+#strikeFX(decisions, model = m, layer = facet_grid(p_throws~stand, labeller = relabel2),
+#         density1 = list(top_inning="Y"), density2 = list(top_inning="N"))+coord_equal()
 dev.off()
 
 ################################################################################################
@@ -169,7 +145,3 @@ viewb <- matrix(c(-0.997436463832855, 0.0657184273004532, -0.0283127501606941, 0
                   0, 0, 0, 1), nrow=4, ncol=4)
 par3d(FOV=30, userMatrix=viewb, windowRect=c(0, 44, 213, 756), zoom=0.09614231)
 rgl.snapshot(filename="rgl_b") 
-
-
-
-

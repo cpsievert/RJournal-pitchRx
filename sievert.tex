@@ -588,9 +588,9 @@ example, \code{dat\$atbat} is data frame with every at bat on June
 1st, 2011 and \code{dat\$pitch} has information related to the outcome
 of each pitch (including PITCHf/x parameters). The \code{object.size}
 of \code{dat} is nearly 300MB. Multiplying this number by 100 days
-exceeds the RAM limitations on most machines. Thus, if a large amount
-of data is required, the user should exploit the R database interface
-\citep{DBI}.
+exceeds the random-access memory of most machines. Thus, if a large
+amount of data is required, the user should exploit the R database
+interface \citep{DBI}.
 
 
 \section{Storing and querying Gameday data}
@@ -609,66 +609,90 @@ easy with \CRANpkg{dplyr} \citep{dplyr}.
 \begin{Schunk}
 \begin{Sinput}
 library(dplyr)
-my_db <- src_sqlite("GamedayDB.sqlite3", create = TRUE)
-# Collect and store all PITCHf/x data from 2008 to 2013
-scrape(start = "2008-01-01", end = "2014-01-01", 
-  suffix = "inning/inning_all.xml", connect = my_db$con)
+db <- src_sqlite("GamedayDB.sqlite3", create = TRUE)
+# Collect and store all PITCHf/x data from 2008 to now
+scrape(start = "2008-01-01", end = Sys.Date(), 
+  suffix = "inning/inning_all.xml", connect = db$con)
 \end{Sinput}
 \end{Schunk}
 %
 In the later sections, animations of four-seam and cut fastballs thrown
 by Mariano Rivera and Phil Hughes during the 2011 season are created.
-In order to obtain the necessary data, one must set criteria on: values
-of the \code{pitcher\_name} field in the \code{pitch} table, values
-of the \code{des} field in the \code{atbat} table, and the \code{url}
-field in both tables. Thus, to speed the time to execute such a query,
-one should create an index on these three fields.
+In order to obtain the data for those animations, one could query
+\code{db} which now has PITCHf/x data from 2008 to 2014. This query
+requires criteria on: the \code{des} field (in the \code{pitch}
+table), the \code{pitcher\_name} field (in the \code{atbat} table),
+and the \code{date} field (in both tables). To reduce the time required
+to find such records and execute such a query, one should create an
+index on each of these three fields.
 %
 \begin{Schunk}
 \begin{Sinput}
-dbSendQuery(my_db$con, "CREATE INDEX url_atbat ON atbat(url)") 
-dbSendQuery(my_db$con, "CREATE INDEX url_pitch ON pitch(url)") 
-dbSendQuery(my_db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)") 
-dbSendQuery(my_db$con, "CREATE INDEX des_index ON pitch(des)")
+library(DBI)
+dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
+dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+dbSendQuery(db$con, "CREATE INDEX date_atbat ON atbat(date)") 
 \end{Sinput}
 \end{Schunk}
 %
-Although our desired query could be expressed entirely in SQL, \pkg{dplyr}'s
+As a part of our query, we'll have to join the \code{atbat} table
+together with the \code{pitch} table. For this task, the \code{gameday\_link}
+and \code{num} fields are helpful since together they provide a way
+to match pitches with at bats. For this reason, a multi-column index
+on the \code{gameday\_link} and \code{num} fields will further reduce
+run time of the query.
+%
+\begin{Schunk}
+\begin{Sinput}
+dbSendQuery(db$con, 'CREATE INDEX pitch_join ON pitch(gameday_link, num)') 
+dbSendQuery(db$con, 'CREATE INDEX atbat_join ON atbat(gameday_link, num)')
+\end{Sinput}
+\end{Schunk}
+%
+Although the query itself could be expressed entirely in SQL, \pkg{dplyr}'s
 grammar for data manipulation (which is database agnostic) can help
-to simplify the task. First, create \code{pitch11} and \code{atbat11}
-which are \emph{representations} of 2011 data in \code{my\_db}.
-That is, \code{pitch11} does not actually pull data from every pitch
-from 2011 into memory, but is a portrayal of the relevant data sitting
-in \code{my\_db}.
+to simplify the task. In this case, \code{at.bat} is a tabular \emph{representation}
+of the remote \code{atbat} table restricted to cases where Rivera
+or Hughes was the pitcher. That is, \code{at.bat} does not contain
+the actual data, but it does contain the information necessary to
+retrieve it from the database.
 %
 \begin{Schunk}
 \begin{Sinput}
-pitch11 <- tbl(my_db, sql("SELECT * FROM pitch WHERE pitch.url LIKE '%year_2011%'"))
-atbat11 <- tbl(my_db, sql("SELECT * FROM atbat WHERE atbat.url LIKE '%year_2011%'"))
+at.bat <- tbl(db, "atbat") %>%   
+  filter(pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
 \end{Sinput}
 \end{Schunk}
 %
-Next, \code{filter} the \code{atbat11} table to restrict to at bats
-in 2011 where either Rivera or Hughes was the pitcher. Then \code{filter}
-the \code{pitch11} table to include only four-seam (FF) and cut (FC)
-fastballs from 2011. By taking an \code{inner\_join} of these two
-filtered tables, we are left with one table representing the data
-of interest. Lastly, \code{collect} the resulting database query
-in order to bring the relevant data into the R session.
+Similarly, \code{fbs} is a tabular representation of the \code{pitch}
+table restricted to four-seam (FF) and cut fastballs (FC).
 %
 \begin{Schunk}
 \begin{Sinput}
-bats <- filter(atbat11, 
-  pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
-FBs <- filter(pitch11, pitch_type == "FF" | pitch_type == "FC")
-pitches <- collect(inner_join(FBs, bats))
+fbs <- tbl(db, "pitch") %>%   
+  filter(pitch_type == "FF" | pitch_type == "FC")
 \end{Sinput}
 \end{Schunk}
 %
+An \code{inner\_join} of these two filtered tables returns a tabular
+representation of all four-seam and cut fastballs thrown by Rivera
+and Hughes. Before \code{collect} actually performs the database
+query and brings the relevant data into the R session, another restriction
+is added so that only pitches from 2011 are included.
+%
+\begin{Schunk}
+\begin{Sinput}
+pitches <- inner_join(fbs, at.bat) %>% 
+  filter(date >= "2011_01_01" & date <= "2012_01_01") %>%
+  collect()
+\end{Sinput}
+\end{Schunk}
+%
+
 \section{Visualizing PITCHf/x}
 
-\subsection{Strike-zone plots and umpire bias}
 
+\subsection{Strike-zone plots and umpire bias}
 Amongst the most common PITCHf/x graphics are strike-zone plots. Such
 a plot has two axes and the coordinates represent the location of
 baseballs as they cross home plate. The term strike-zone plot can
@@ -681,6 +705,7 @@ most popular use is for addressing umpire bias in a strike versus
 ball decision \citet{bias}. The probabilistic plots section demonstrates
 how \pkg{pitchRx} simplifies the process behind creating such plots
 via a case study on the impact of home field advantage on umpire decisions.
+
 In the world of sports, it is a common belief that umpires (or referees)
 have a tendency to favor the home team. PITCHf/x provides a unique
 opportunity to add to this discussion by modeling the probability
@@ -698,20 +723,27 @@ batter does not swing and the umpire declares the pitch a strike (which
 is a favorable outcome for the pitcher). A \dfn{ball} is another
 outcome where the batter does not swing and the umpire declares the
 pitch a ball (which is a favorable outcome for the batter). All \code{decisions}
-made starting in 2008 can be obtained from \code{my\_db} with the
-following query using \pkg{dplyr}.
+made starting in 2008 can be obtained from \code{db} with the following
+query using \pkg{dplyr}.
 %
 \begin{Schunk}
 \begin{Sinput}
-pitch <- select(tbl(my_db, "pitch"), px, pz, des)
-atbat <- select(tbl(my_db, "atbat"), b_height, p_throws, stand, inning_side)
+pitch <- tbl(db, "pitch") %>%   
+  filter(des == "Called Strike" | des == "Ball") %>% 
+# Keep location variables, descriptions & game/atbat ids  
+  select(px, pz, des, gameday_link, num) %>% 
+# Create 0-1 indicator of strike/ball   
+  mutate(strike = as.numeric(des == "Called Strike")) 
+  
+atbat <- tbl(db, "atbat") %>% 
+  filter(date <= "2014_01_01") %>%
+# Most of these variables are used as covariates in probabilistic models   
+  select(b_height, p_throws, stand, inning_side, date, gameday_link, num)
+
 decisions <- collect(inner_join(pitch, atbat))
-#This indicator is used as a response when constructing probabilistic plots
-decisions$strike <- as.numeric(decisions$des %in% "Called Strike")
 \end{Sinput}
 \end{Schunk}
 %
-
 \subsubsection{Density plots}
 
 The \code{decisions} data frame contains data on over 2.5 million
@@ -724,13 +756,13 @@ to this phenomenon; which we will not investigate here.
 \begin{Schunk}
 \begin{Sinput}
 # strikeFX uses the stand variable to calculate strike-zones 
-# Here is a slick way to create better labels for stand without changing its values
+# Here is a slick way to create better facet titles without changing data values
 relabel <- function(variable, value) { 
   value <- sub("^R$", "Right-Handed Batter", value) 
   sub("^L$", "Left-Handed Batter", value) 
 }
 strikes <- subset(decisions, strike == 1)
-strikeFX(strikes, geom = "tile", layer = facet_grid(. ~ stand, labeller = relabel))
+strikeFX(strikes, geom = "raster", layer = facet_grid(. ~ stand, labeller = relabel))
 \end{Sinput}
 \end{Schunk}
 %
@@ -740,8 +772,6 @@ strikeFX(strikes, geom = "tile", layer = facet_grid(. ~ stand, labeller = relabe
 \caption{\label{fig:STRIKES} Density of called strikes for right-handed batters
 and left-handed batters (from 2008 to 2013).}
 \end{figure}
-
-
 Figure~\ref{fig:STRIKES} shows one static rectangle (or strike-zone)
 per plot automatically generated by \code{strikeFX}. The definition
 of the strike-zone is notoriously ambiguous. As a result, the boundaries
@@ -766,7 +796,7 @@ by using the \code{density1} and \code{density2} options.
 %
 \begin{Schunk}
 \begin{Sinput}
-strikeFX(decisions, geom = "tile", density1 = list(des = "Called Strike"),          
+strikeFX(decisions, geom = "raster", density1 = list(des = "Called Strike"),          
   density2 = list(des = "Called Strike")) + facet_grid(. ~ stand, labeller = relabel)
 \end{Sinput}
 \end{Schunk}
@@ -789,7 +819,7 @@ strike-zone.
 %
 \begin{Schunk}
 \begin{Sinput}
-strikeFX(decisions, geom = "tile", density1 = list(des = "Called Strike"), 
+strikeFX(decisions, geom = "raster", density1 = list(des = "Called Strike"), 
   density2 = list(des = "Ball"), layer = facet_grid(. ~ stand, labeller = relabel)) 
 \end{Sinput}
 \end{Schunk}
@@ -847,6 +877,7 @@ case, the \code{interaction} function creates a factor with eight
 different levels since every input factor has two levels. Consequently,
 there are 8 different levels of smooth surfaces over the spatial region
 defined by \code{px} and \code{pz}.
+
 The fitted model \code{m} contains a lot of information which \code{strikeFX}
 uses in conjunction with any \pkg{ggplot2} facet commands to infer
 which and how surfaces should be plotted. In particular, the \code{var.summary}
@@ -951,13 +982,12 @@ of the umpire; that is, each time the plot refreshes, the balls are
 getting closer to the viewer. This is reflected with the increase
 in size of the points as the animation progresses. Obviously, some
 pitches travel faster than others, which explains the different sizes
-within the same frame. Note that animations in this paper revert to
-the initial point of release once \emph{all} of the baseballs have
-reached home plate. During an interactive session, \code{animateFX}
-produces a series of plots that may not viewed easily. One option
-available to the user is to wrap \code{animation::saveHTML} around
-\code{animateFX} to view the animation in a browser with proper looping
-controls \citep{animation}.
+within a particular frame. Animations revert to the initial point
+of release once \emph{all} of the baseballs have reached home plate.
+During an interactive session, \code{animateFX} produces a series
+of plots that may not viewed easily. One option available to the user
+is to wrap \code{animation::saveHTML} around \code{animateFX} to
+view the animation in a browser with proper looping controls \citep{animation}.
 
 To reduce the time and thinking required to produce these animations,
 \code{animateFX} has default settings for the geometry, color, opacity
@@ -1076,6 +1106,7 @@ are static pictures of an interactive object. \label{fig:rgl}}
 
 
 \section{Conclusion}
+
 \pkg{pitchRx} utilizes \pkg{XML2R}'s convenient framework for manipulating
 XML content in order to provide easy access to PITCHf/x and related
 Gameday data. \pkg{pitchRx} removes access barriers which allows
@@ -1088,11 +1119,11 @@ of leveraging \pkg{XML2R} to quickly assemble custom XML data collection
 mechanisms.
 
 \section{Acknowledgements}
-
 Many thanks to my major professor, Dr. Heike Hofmann, for her direction
 and support throughout this project. Thanks also to the anonymous
 reviewers for helpful feedback. This document was created using the
-\CRANpkg{knitr} package \citet{knitr}.
+\CRANpkg{knitr} package \citet{knitr}. The source files can be found
+\href{https://github.com/cpsievert/RJournal-pitchRx}{here}.
 
 
 
