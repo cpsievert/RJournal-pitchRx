@@ -6,38 +6,45 @@ library(DBI)
 library(magrittr)
 
 # This database was created using the technique described here -- http://baseballwithr.wordpress.com/2014/03/24/422/
-db <- src_sqlite("~/pitchfx/pitchRx.sqlite3")
+db <- src_sqlite("~/pitchfx/db.sqlite3")
 
-dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
+# Database indicies to speed up the queries
 dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+dbSendQuery(db$con, "CREATE INDEX type_index ON pitch(pitch_type)")
 dbSendQuery(db$con, "CREATE INDEX date_atbat ON atbat(date)") 
+
 dbSendQuery(db$con, 'CREATE INDEX pitch_join ON pitch(gameday_link, num)')
 dbSendQuery(db$con, 'CREATE INDEX atbat_join ON atbat(gameday_link, num)')
 
-# Grad first 'example' data set 
+dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
+
+# Grab first 'example' data set 
 at.bat <- tbl(db, "atbat") %>%   
-  filter(pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
-  
+  filter(pitcher_name %in% c("Mariano Rivera", "Phil Hughes"))
+
 fbs <- tbl(db, "pitch") %>%   
-  filter(pitch_type == "FF" | pitch_type == "FC")
-  
+  filter(pitch_type %in% c("FF", "FC"))
+
 pitches <- inner_join(fbs, at.bat) %>% 
   filter(date >= "2011_01_01" & date <= "2012_01_01") %>%
   collect()
-  
+
 # Every 'decision' made from 2008 to 2013
 pitch <- tbl(db, "pitch") %>%
-  filter(des == "Called Strike" | des == "Ball") %>%
-# Keep pitch location, descriptions 
+  filter(des %in% c("Called Strike", "Ball")) %>%
+  # Keep pitch location, descriptions 
   select(px, pz, des, gameday_link, num) %>%
-# 0-1 indicator of strike/ball
+  # 0-1 indicator of strike/ball
   mutate(strike = as.numeric(des == "Called Strike"))
-  
+
 atbat <- tbl(db, "atbat") %>%
-# Most of these variables will be used as covariates in probabilistic models
-  select(b_height, p_throws, stand, inning_side, date, gameday_link, num) %>%
-  filter(date <= "2014_01_01")
-decisions <- collect(inner_join(pitch, atbat))
+  # Select variables to be used later as covariates in probabilistic models
+  select(b_height, p_throws, stand, inning_side, date, gameday_link, num)
+  
+#explain(inner_join(pitch, atbat))
+decisions <- inner_join(pitch, atbat) %>%
+  filter(date <= "2014_01_01") %>%
+  collect()
 
 #Formatting needed for fitting models
 #decisions$strike <- as.numeric(decisions$des %in% "Called Strike")
@@ -54,16 +61,27 @@ relabel <- function(variable, value) {
   sub("^L$", "Left-Handed Batter", value)
 }
 
-#figure 1
-pdf(file="strikes.pdf", width=6.5, height=3.5)
 strikes <- subset(decisions, strike == 1)
-strikeFX(strikes, geom = "raster", n = 25, layer = facet_grid(. ~ stand, labeller = relabel)) + coord_equal()
-dev.off()
+p <- strikeFX(strikes, geom = "raster", n = 25, 
+         layer = facet_grid(. ~ stand, labeller = relabel)) + coord_equal()
+
+#figure 1
+# why is this figure so large?!?
+#pdf(file="strikes.pdf", width=6.5, height=3.5)
+#dev.off()
+ggsave(
+  filename = "strikes.png",
+  p,
+  width = 6.5,
+  height = 3.5,
+  units = "in",
+  dpi = 150
+)
 
 #figure 2
 pdf(file="strikesVSballs.pdf", width=6.5, height=3.5)
 strikeFX(decisions, geom = "raster", density1 = list(des = "Called Strike"), 
-         density2 = list(des = "Ball"), layer = facet_grid(. ~ stand, labeller = relabel)) + coord_equal()
+         density2 = list(des = "Ball"), layer = facet_grid(. ~ stand, labeller = relabel)) + coord_equal()  
 dev.off()
 
 ################################################################################################

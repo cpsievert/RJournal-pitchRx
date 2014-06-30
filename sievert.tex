@@ -31,21 +31,23 @@ to generate strike-zone plots using the \pkg{ggplot2} package. }
 
 \subsection{What is PITCHf/x?}
 
-PITCHf/x is a general term for a system of cameras which tracks the
-flight of a baseball with a series of 3D measurements. These measurements
-define a baseball's flight path from a pitcher's hand to home plate.%
+PITCHf/x is a general term for a system that generates a series of
+3D measurements of a baseball's path from a pitcher's hand to home
+plate \citep{patent}.%
 \footnote{A \dfn{pitcher} throws a ball to the opposing \dfn{batter}, who
 stands besides home plate and tries to hit the ball into the field
 of play.%
-} A best fitting parametric curve is fit to these measurements under
-the assumption of constant acceleration \citep{patent}. There are
-studies that suggest that this assumption is quite reasonable -- especially
-for non-knuckleballs \citep{trajecoryAnalysis}. In other words, the
-smoothed flight paths are often a reasonable approximation (within
-a couple of inches) of the real path. The parameters used to fit this
-curve are made available in XML format on a publicly accessible website.
-This website, maintained by MLBAM, also hosts a wealth of other baseball
-related data used to inform MLB's Gameday webcast in near real time.
+} In an attempt to estimate the location of the ball at any time point,
+a quadratic regression model with nine parameters (defined by the
+equations of motion for constant linear acceleration) is fit to each
+pitch. Studies with access to the actual measurements suggest that
+this model is quite reasonable -- especially for non-knuckleball pitches
+\citep{trajecoryAnalysis}. That is, the fitted path often provides
+a reasonable estimate (within a couple of inches) of the actual locations.
+Unfortunately, only the parameter estimates are made available to
+the public. The website that provides these estimates is maintained
+by MLBAM and hosts a wealth of other baseball related data used to
+inform MLB's Gameday webcast service in near real time.
 
 
 \subsection{Why is PITCHf/x important?}
@@ -70,9 +72,9 @@ statistical ideas and practice to the general public. If you have
 witnessed television broadcasts of MLB games, you know one obvious
 application of PITCHf/x is locating pitches in the strike-zone as
 well as recreating flight trajectories, tracking pitch speed, etc.
-Some well-known and statistically intriguing problems related to PITCHf/x
-include: classifying pitch types, predicting pitch sequences, and
-clustering pitchers with similar tendencies \citep{curve}.
+Some on-going statistical research related to PITCHf/x includes: classifying
+pitch types, predicting pitch sequences, and clustering pitchers with
+similar tendencies \citep{curve}.
 
 
 \subsection[Contributions of pitchRx and XML2R]{Contributions of \pkg{pitchRx} and \pkg{XML2R}}
@@ -205,7 +207,7 @@ provide nice overview.
 \end{widetable}
 
 \begin{figure}
-\centerline{\includegraphics[scale = 0.75]{Drawing1.png}}
+\centerline{\includegraphics[scale = 1.25]{Drawing1.pdf}}
 
 \caption{Table relations between Gameday data accessible via \code{scrape}.
 The direction of the arrows indicate a one to possibly many relationship.
@@ -234,7 +236,7 @@ The next few sections demonstrate how \pkg{pitchRx} leverages \pkg{XML2R}
 in order to produce a collection of tables from \code{inning\_all.xml}
 files. A similar approach is used by \code{pitchRx::scrape} to construct
 tables from the other Gameday files in Table~\ref{table:pitchfx}.
-In fact, \pkg{XML2R} has also been implemented in the R package \href{https://github.com/cpsievert/bbscrapeR}{bbscrapeR}
+In fact, \pkg{XML2R} has also been used in the R package \href{https://github.com/cpsievert/bbscrapeR}{bbscrapeR}
 which collects data from \href{http://nba.com}{nba.com} and \href{http://wnba.com}{wnba.com}.
 
 
@@ -252,12 +254,12 @@ urls <- makeUrls(start = "2011-06-01", end = "2011-06-01")
 sub("http://gd2.mlb.com/components/game/mlb/", "", head(urls))
 \end{Sinput}
 \begin{Soutput}
-[1] "year_2011/month_06/day_01/gid_2011_06_01_anamlb_kcamlb_1"
-[2] "year_2011/month_06/day_01/gid_2011_06_01_balmlb_seamlb_1"
-[3] "year_2011/month_06/day_01/gid_2011_06_01_chamlb_bosmlb_1"
-[4] "year_2011/month_06/day_01/gid_2011_06_01_clemlb_tormlb_1"
-[5] "year_2011/month_06/day_01/gid_2011_06_01_colmlb_lanmlb_1"
-[6] "year_2011/month_06/day_01/gid_2011_06_01_flomlb_arimlb_1"
+#> [1] "year_2011/month_06/day_01/gid_2011_06_01_anamlb_kcamlb_1"
+#> [2] "year_2011/month_06/day_01/gid_2011_06_01_balmlb_seamlb_1"
+#> [3] "year_2011/month_06/day_01/gid_2011_06_01_chamlb_bosmlb_1"
+#> [4] "year_2011/month_06/day_01/gid_2011_06_01_clemlb_tormlb_1"
+#> [5] "year_2011/month_06/day_01/gid_2011_06_01_colmlb_lanmlb_1"
+#> [6] "year_2011/month_06/day_01/gid_2011_06_01_flomlb_arimlb_1"
 \end{Soutput}
 \end{Schunk}
 %
@@ -287,21 +289,21 @@ obs <- XML2Obs(files, url.map = TRUE, quiet = TRUE)
 table(names(obs))
 \end{Sinput}
 \begin{Soutput}
-
-                               game                        game//inning 
-                                  2                                  18 
-       game//inning//bottom//action         game//inning//bottom//atbat 
-                                 13                                  69 
- game//inning//bottom//atbat//pitch     game//inning//bottom//atbat//po 
-                                247                                   4 
-game//inning//bottom//atbat//runner           game//inning//top//action 
-                                 50                                  20 
-           game//inning//top//atbat     game//inning//top//atbat//pitch 
-                                 79                                 278 
-       game//inning//top//atbat//po    game//inning//top//atbat//runner 
-                                 17                                  89 
-                            url_map 
-                                  1 
+#> 
+#>                                game                        game//inning 
+#>                                   2                                  18 
+#>        game//inning//bottom//action         game//inning//bottom//atbat 
+#>                                  13                                  69 
+#>  game//inning//bottom//atbat//pitch     game//inning//bottom//atbat//po 
+#>                                 247                                   4 
+#> game//inning//bottom//atbat//runner           game//inning//top//action 
+#>                                  50                                  20 
+#>            game//inning//top//atbat     game//inning//top//atbat//pitch 
+#>                                  79                                 278 
+#>        game//inning//top//atbat//po    game//inning//top//atbat//runner 
+#>                                  17                                  89 
+#>                             url_map 
+#>                                   1
 \end{Soutput}
 \end{Schunk}
 %
@@ -315,23 +317,20 @@ column which tracks the mapping between observations and file names.
 %
 \begin{Schunk}
 \begin{Sinput}
-obs[c(1, 2500)]
+obs[1]
 \end{Sinput}
 \begin{Soutput}
-$`game//inning//top//atbat//pitch`
-     des             id  type tfs      tfs_zulu               x        y       
-[1,] "Called Strike" "3" "S"  "191018" "2011-06-01T23:10:18Z" "109.87" "145.06"
-     sv_id           start_speed end_speed sz_top sz_bot pfx_x  pfx_z  px      
-[1,] "110601_191020" "87.9"      "82.1"    "3.6"  "1.65" "-6.7" "4.36" "-0.213"
-     pz      x0       y0     z0      vx0     vy0        vz0      ax       
-[1,] "2.611" "-1.612" "50.0" "5.633" "5.808" "-128.728" "-2.903" "-11.406"
-     ay       az        break_y break_angle break_length pitch_type
-[1,] "22.954" "-24.681" "23.9"  "22.5"      "6.5"        "SI"      
-     type_confidence zone nasty spin_dir  spin_rate  cc mt url_key
-[1,] ".798"          "5"  "39"  "236.697" "1538.041" "" "" "url1" 
-
-$<NA>
-NULL
+#> $`game//inning//top//atbat//pitch`
+#>      des             id  type tfs      tfs_zulu               x        y       
+#> [1,] "Called Strike" "3" "S"  "191018" "2011-06-01T23:10:18Z" "109.87" "145.06"
+#>      sv_id           start_speed end_speed sz_top sz_bot pfx_x  pfx_z  px      
+#> [1,] "110601_191020" "87.9"      "82.1"    "3.6"  "1.65" "-6.7" "4.36" "-0.213"
+#>      pz      x0       y0     z0      vx0     vy0        vz0      ax       
+#> [1,] "2.611" "-1.612" "50.0" "5.633" "5.808" "-128.728" "-2.903" "-11.406"
+#>      ay       az        break_y break_angle break_length pitch_type
+#> [1,] "22.954" "-24.681" "23.9"  "22.5"      "6.5"        "SI"      
+#>      type_confidence zone nasty spin_dir  spin_rate  cc mt url_key
+#> [1,] ".798"          "5"  "39"  "236.697" "1538.041" "" "" "url1"
 \end{Soutput}
 \end{Schunk}
 %
@@ -365,25 +364,25 @@ removed:
 tmp[grep("game//inning//atbat", names(tmp))][1:2]
 \end{Sinput}
 \begin{Soutput}
-$`game//inning//atbat`
-     num b   s   o   start_tfs start_tfs_zulu         batter   stand b_height
-[1,] "1" "0" "1" "0" "190935"  "2011-06-01T23:09:35Z" "430001" "R"   "5-10"  
-     pitcher  p_throws
-[1,] "502190" "R"     
-     des                                                       event      score
-[1,] "Rickie Weeks homers (10) on a fly ball to left field.  " "Home Run" "T"  
-     home_team_runs away_team_runs url_key inning_side
-[1,] "0"            "1"            "url1"  "top"      
-
-$`game//inning//atbat`
-     num b   s   o   start_tfs start_tfs_zulu         batter   stand b_height
-[1,] "2" "0" "0" "0" "191105"  "2011-06-01T23:11:05Z" "460579" "L"   "6-0"   
-     pitcher  p_throws
-[1,] "502190" "R"     
-     des                                                                     
-[1,] "Nyjer Morgan triples (3) on a line drive to right fielder Jay Bruce.  "
-     event    url_key inning_side
-[1,] "Triple" "url1"  "top"      
+#> $`game//inning//atbat`
+#>      num b   s   o   start_tfs start_tfs_zulu         batter   stand b_height
+#> [1,] "1" "0" "1" "0" "190935"  "2011-06-01T23:09:35Z" "430001" "R"   "5-10"  
+#>      pitcher  p_throws
+#> [1,] "502190" "R"     
+#>      des                                                       event      score
+#> [1,] "Rickie Weeks homers (10) on a fly ball to left field.  " "Home Run" "T"  
+#>      home_team_runs away_team_runs url_key inning_side
+#> [1,] "0"            "1"            "url1"  "top"      
+#> 
+#> $`game//inning//atbat`
+#>      num b   s   o   start_tfs start_tfs_zulu         batter   stand b_height
+#> [1,] "2" "0" "0" "0" "191105"  "2011-06-01T23:11:05Z" "460579" "L"   "6-0"   
+#>      pitcher  p_throws
+#> [1,] "502190" "R"     
+#>      des                                                                     
+#> [1,] "Nyjer Morgan triples (3) on a line drive to right fielder Jay Bruce.  "
+#>      event    url_key inning_side
+#> [1,] "Triple" "url1"  "top"
 \end{Soutput}
 \end{Schunk}
 %
@@ -403,15 +402,15 @@ obs2 <- re_name(tmp, equiv = c("game//inning//top//atbat//pitch",
 table(names(obs2))
 \end{Sinput}
 \begin{Soutput}
-
-                       game                game//inning 
-                          2                          18 
-       game//inning//action         game//inning//atbat 
-                         33                         148 
- game//inning//atbat//pitch     game//inning//atbat//po 
-                        525                          21 
-game//inning//atbat//runner                     url_map 
-                        139                           1 
+#> 
+#>                        game                game//inning 
+#>                           2                          18 
+#>        game//inning//action         game//inning//atbat 
+#>                          33                         148 
+#>  game//inning//atbat//pitch     game//inning//atbat//po 
+#>                         525                          21 
+#> game//inning//atbat//runner                     url_map 
+#>                         139                           1
 \end{Soutput}
 \end{Schunk}
 %
@@ -427,17 +426,17 @@ on the \code{game//inning} level:
 obs2[grep("^game//inning$", names(obs2))][1:3] 
 \end{Sinput}
 \begin{Soutput}
-$`game//inning`
-     num away_team home_team next url_key
-[1,] "1" "mil"     "cin"     "Y"  "url1" 
-
-$`game//inning`
-     num away_team home_team next url_key
-[1,] "2" "mil"     "cin"     "Y"  "url1" 
-
-$`game//inning`
-     num away_team home_team next url_key
-[1,] "3" "mil"     "cin"     "Y"  "url1" 
+#> $`game//inning`
+#>      num away_team home_team next url_key
+#> [1,] "1" "mil"     "cin"     "Y"  "url1" 
+#> 
+#> $`game//inning`
+#>      num away_team home_team next url_key
+#> [1,] "2" "mil"     "cin"     "Y"  "url1" 
+#> 
+#> $`game//inning`
+#>      num away_team home_team next url_key
+#> [1,] "3" "mil"     "cin"     "Y"  "url1"
 \end{Soutput}
 \end{Schunk}
 %
@@ -453,12 +452,12 @@ value of \code{num} for \code{game//inning} observations can be
 obswkey <- add_key(obs2, parent = "game//inning", recycle = "num", key.name = "inning")
 \end{Sinput}
 \begin{Soutput}
-A key for the following children will be generated for the game//inning node:
-game//inning//atbat//pitch
-game//inning//atbat//runner
-game//inning//atbat
-game//inning//atbat//po
-game//inning//action
+#> A key for the following children will be generated for the game//inning node:
+#> game//inning//atbat//pitch
+#> game//inning//atbat//runner
+#> game//inning//atbat
+#> game//inning//atbat//po
+#> game//inning//action
 \end{Soutput}
 \end{Schunk}
 %
@@ -473,12 +472,12 @@ we remove any need to retain a \code{game//inning} table.
 obswkey <- add_key(obswkey, parent = "game//inning", recycle = "next")
 \end{Sinput}
 \begin{Soutput}
-A key for the following children will be generated for the game//inning node:
-game//inning//atbat//pitch
-game//inning//atbat//runner
-game//inning//atbat
-game//inning//atbat//po
-game//inning//action
+#> A key for the following children will be generated for the game//inning node:
+#> game//inning//atbat//pitch
+#> game//inning//atbat//runner
+#> game//inning//atbat
+#> game//inning//atbat//po
+#> game//inning//action
 \end{Soutput}
 \end{Schunk}
 %
@@ -491,10 +490,10 @@ as follows:
 obswkey <- add_key(obswkey, parent = "game//inning//atbat", recycle = "num")
 \end{Sinput}
 \begin{Soutput}
-A key for the following children will be generated for the game//inning//atbat node:
-game//inning//atbat//pitch
-game//inning//atbat//runner
-game//inning//atbat//po
+#> A key for the following children will be generated for the game//inning//atbat node:
+#> game//inning//atbat//pitch
+#> game//inning//atbat//runner
+#> game//inning//atbat//po
 \end{Soutput}
 \end{Schunk}
 %
@@ -513,26 +512,26 @@ are missing, \code{NA}s will be inserted as values.
 \begin{Sinput}
 tables <- collapse_obs(obswkey) 
 #As mentioned before, we do not need the 'inning' table 
-tables <- tables[-grep("^game//inning$", names(tables))]      
+tables <- tables[!grepl("^game//inning$", names(tables))]      
 table.names <- c("game", "action", "atbat", "pitch", "po", "runner") 
 tables <- setNames(tables, table.names) 
 head(tables[["runner"]])
 \end{Sinput}
 \begin{Soutput}
-     id       start end  event       score rbi earned url_key inning_side
-[1,] "430001" ""    ""   "Home Run"  "T"   "T" "T"    "url1"  "top"      
-[2,] "460579" ""    "3B" "Triple"    NA    NA  NA     "url1"  "top"      
-[3,] "460579" "3B"  ""   "Groundout" "T"   "T" "T"    "url1"  "top"      
-[4,] "425902" ""    "1B" "Single"    NA    NA  NA     "url1"  "top"      
-[5,] "425902" "1B"  ""   "Pop Out"   NA    NA  NA     "url1"  "top"      
-[6,] "458015" ""    "1B" "Single"    NA    NA  NA     "url1"  "bottom"   
-     inning next num
-[1,] "1"    "Y"  "1"
-[2,] "1"    "Y"  "2"
-[3,] "1"    "Y"  "3"
-[4,] "1"    "Y"  "4"
-[5,] "1"    "Y"  "6"
-[6,] "1"    "Y"  "9"
+#>      id       start end  event       score rbi earned url_key inning_side
+#> [1,] "430001" ""    ""   "Home Run"  "T"   "T" "T"    "url1"  "top"      
+#> [2,] "460579" ""    "3B" "Triple"    NA    NA  NA     "url1"  "top"      
+#> [3,] "460579" "3B"  ""   "Groundout" "T"   "T" "T"    "url1"  "top"      
+#> [4,] "425902" ""    "1B" "Single"    NA    NA  NA     "url1"  "top"      
+#> [5,] "425902" "1B"  ""   "Pop Out"   NA    NA  NA     "url1"  "top"      
+#> [6,] "458015" ""    "1B" "Single"    NA    NA  NA     "url1"  "bottom"   
+#>      inning next num
+#> [1,] "1"    "Y"  "1"
+#> [2,] "1"    "Y"  "2"
+#> [3,] "1"    "Y"  "3"
+#> [4,] "1"    "Y"  "4"
+#> [5,] "1"    "Y"  "6"
+#> [6,] "1"    "Y"  "9"
 \end{Soutput}
 \end{Schunk}
 %
@@ -568,9 +567,9 @@ gids11 <- gids[grep("2011_06_01", gids)]
 head(gids11)
 \end{Sinput}
 \begin{Soutput}
-[1] "gid_2011_06_01_anamlb_kcamlb_1" "gid_2011_06_01_balmlb_seamlb_1"
-[3] "gid_2011_06_01_chamlb_bosmlb_1" "gid_2011_06_01_clemlb_tormlb_1"
-[5] "gid_2011_06_01_colmlb_lanmlb_1" "gid_2011_06_01_flomlb_arimlb_1"
+#> [1] "gid_2011_06_01_anamlb_kcamlb_1" "gid_2011_06_01_balmlb_seamlb_1"
+#> [3] "gid_2011_06_01_chamlb_bosmlb_1" "gid_2011_06_01_clemlb_tormlb_1"
+#> [5] "gid_2011_06_01_colmlb_lanmlb_1" "gid_2011_06_01_flomlb_arimlb_1"
 \end{Soutput}
 \end{Schunk}
 %
@@ -588,23 +587,22 @@ example, \code{dat\$atbat} is data frame with every at bat on June
 1st, 2011 and \code{dat\$pitch} has information related to the outcome
 of each pitch (including PITCHf/x parameters). The \code{object.size}
 of \code{dat} is nearly 300MB. Multiplying this number by 100 days
-exceeds the random-access memory of most machines. Thus, if a large
-amount of data is required, the user should exploit the R database
-interface \citep{DBI}.
+exceeds the memory of most machines. Thus, if a large amount of data
+is required, the user should exploit the R database interface \citep{DBI}.
 
 
 \section{Storing and querying Gameday data}
 
-Since PITCHf/x data can easily exhaust random-access memory, one should
-consider establishing a database instance before using \code{scrape}.
-By passing a database connection to the \code{connect} argument,
-\code{scrape} will try to create (and/or append to existing) tables
-using that connection. If the connection fails for some reason, tables
-will be written as csv files in the current working directory. The
-benefits of using the \code{connect} argument includes improved memory
-management which can greatly reduce run time. \code{connect} will
-support a MySQL connection, but creating a SQLite database is quite
-easy with \CRANpkg{dplyr} \citep{dplyr}. 
+Since PITCHf/x data can easily exhaust memory, one should consider
+establishing a database instance before using \code{scrape}. By passing
+a database connection to the \code{connect} argument, \code{scrape}
+will try to create (and/or append to existing) tables using that connection.
+If the connection fails for some reason, tables will be written as
+csv files in the current working directory. The benefits of using
+the \code{connect} argument includes improved memory management which
+can greatly reduce run time. \code{connect} will support a MySQL
+connection, but creating a SQLite database is quite easy with \CRANpkg{dplyr}
+\citep{dplyr}. 
 %
 \begin{Schunk}
 \begin{Sinput}
@@ -619,18 +617,18 @@ scrape(start = "2008-01-01", end = Sys.Date(),
 In the later sections, animations of four-seam and cut fastballs thrown
 by Mariano Rivera and Phil Hughes during the 2011 season are created.
 In order to obtain the data for those animations, one could query
-\code{db} which now has PITCHf/x data from 2008 to 2014. This query
-requires criteria on: the \code{des} field (in the \code{pitch}
-table), the \code{pitcher\_name} field (in the \code{atbat} table),
+\code{db} which now has PITCHf/x data from 2008 to date. This query
+requires criteria on: the \code{pitcher\_name} field (in the \code{atbat}
+table), the \code{pitch\_type} field (in the \code{pitch} table),
 and the \code{date} field (in both tables). To reduce the time required
-to find such records and execute such a query, one should create an
-index on each of these three fields.
+to search those records, one should create an index on each of these
+three fields.
 %
 \begin{Schunk}
 \begin{Sinput}
 library(DBI)
-dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
-dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)") 
+dbSendQuery(db$con, "CREATE INDEX type_index ON pitch(pitch_type)") 
 dbSendQuery(db$con, "CREATE INDEX date_atbat ON atbat(date)") 
 \end{Sinput}
 \end{Schunk}
@@ -660,7 +658,7 @@ retrieve it from the database.
 \begin{Schunk}
 \begin{Sinput}
 at.bat <- tbl(db, "atbat") %>%   
-  filter(pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
+  filter(pitcher_name %in% c("Mariano Rivera", "Phil Hughes"))
 \end{Sinput}
 \end{Schunk}
 %
@@ -669,8 +667,8 @@ table restricted to four-seam (FF) and cut fastballs (FC).
 %
 \begin{Schunk}
 \begin{Sinput}
-fbs <- tbl(db, "pitch") %>%   
-  filter(pitch_type == "FF" | pitch_type == "FC")
+fbs <- tbl(db, "pitch") %>%      
+  filter(pitch_type %in% c("FF", "FC"))
 \end{Sinput}
 \end{Schunk}
 %
@@ -723,27 +721,32 @@ batter does not swing and the umpire declares the pitch a strike (which
 is a favorable outcome for the pitcher). A \dfn{ball} is another
 outcome where the batter does not swing and the umpire declares the
 pitch a ball (which is a favorable outcome for the batter). All \code{decisions}
-made starting in 2008 can be obtained from \code{db} with the following
-query using \pkg{dplyr}.
+made between 2008 and 2013 can be obtained from \code{db} with the
+following query using \pkg{dplyr}.
 %
 \begin{Schunk}
 \begin{Sinput}
-pitch <- tbl(db, "pitch") %>%   
-  filter(des == "Called Strike" | des == "Ball") %>% 
-# Keep location variables, descriptions & game/atbat ids  
-  select(px, pz, des, gameday_link, num) %>% 
-# Create 0-1 indicator of strike/ball   
-  mutate(strike = as.numeric(des == "Called Strike")) 
-  
-atbat <- tbl(db, "atbat") %>% 
-  filter(date <= "2014_01_01") %>%
-# Most of these variables are used as covariates in probabilistic models   
-  select(b_height, p_throws, stand, inning_side, date, gameday_link, num)
+# First, add an index on the pitch description to speed up run-time
+dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
 
-decisions <- collect(inner_join(pitch, atbat))
+pitch <- tbl(db, "pitch") %>%   
+  filter(des %in% c("Called Strike", "Ball")) %>%   
+  # Keep pitch location, descriptions    
+  select(px, pz, des, gameday_link, num) %>%   
+  # 0-1 indicator of strike/ball   
+  mutate(strike = as.numeric(des == "Called Strike"))
+
+atbat <- tbl(db, "atbat") %>%   
+  # Select variables to be used later as covariates in probabilistic models
+  select(b_height, p_throws, stand, inning_side, date, gameday_link, num)    
+
+decisions <- inner_join(pitch, atbat) %>%   
+  filter(date <= "2014_01_01") %>%   
+  collect()
 \end{Sinput}
 \end{Schunk}
 %
+
 \subsubsection{Density plots}
 
 The \code{decisions} data frame contains data on over 2.5 million
@@ -767,11 +770,12 @@ strikeFX(strikes, geom = "raster", layer = facet_grid(. ~ stand, labeller = rela
 \end{Schunk}
 %
 \begin{figure}[h]
-\centerline{\includegraphics[scale = 1]{strikes.pdf}}
+\centerline{\includegraphics[width=0.95\textwidth]{strikes.png}}
 
 \caption{\label{fig:STRIKES} Density of called strikes for right-handed batters
 and left-handed batters (from 2008 to 2013).}
 \end{figure}
+
 Figure~\ref{fig:STRIKES} shows one static rectangle (or strike-zone)
 per plot automatically generated by \code{strikeFX}. The definition
 of the strike-zone is notoriously ambiguous. As a result, the boundaries
@@ -825,7 +829,7 @@ strikeFX(decisions, geom = "raster", density1 = list(des = "Called Strike"),
 \end{Schunk}
 %
 \begin{figure}[h]
-\centerline{\includegraphics[scale = 1]{strikesVSballs.pdf}}
+\centerline{\includegraphics[width=0.95\textwidth]{strikesVSballs.pdf}}
 
 \caption{\label{fig:strikesVSballs} Density of called strikes minus density
 of balls for both right-handed batters and left-handed batters (from
@@ -899,7 +903,7 @@ strikeFX(decisions, model = m, layer = facet_grid(. ~ stand, labeller = relabel)
 \end{Schunk}
 %
 \begin{figure}[h]
-\centerline{\includegraphics[scale = 1]{prob-strike.pdf}}
+\centerline{\includegraphics[width=0.95\textwidth]{prob-strike.pdf}}
 
 \caption{\label{fig:strike-probs}Probability that a right-handed away pitcher
 receives a called strike (provided the umpire has to make a decision).
@@ -957,7 +961,6 @@ and \code{stand} are interesting as well. For instance, pitching
 at home has a large positive impact for a left-handed pitcher throwing
 in the lower inside portion of the strike-zone to a right-handed batter,
 but the impact seems negligible in the mirror opposite case.
-
 Differenced probabilistic densities are clearly an interesting visual
 tool for analyzing PITCHf/x data. With \code{strikeFX}, one can quickly
 and easily make all sorts of visual comparisons for various situations.
@@ -997,7 +1000,8 @@ work, a data frame with the appropriately named PITCHf/x parameters
 (that is, x0, y0, z0, vx0, vy0, vz0, ax0, ay0 and az0) is required.
 In Figure~\ref{fig:animate1}, every four-seam and cut fastball thrown
 by Rivera and Hughes during the 2011 season is visualized using the
-\code{pitches} data frame obtained earlier.
+\code{pitches} data frame obtained earlier (the animation is available
+at \url{http://cpsievert.github.io/pitchRx/ani1}).
 %
 \begin{Schunk}
 \begin{Sinput}
@@ -1007,7 +1011,7 @@ animateFX(pitches, layer=list(theme_bw(), coord_equal(),
 \end{Schunk}
 %
 \begin{figure}[h]
-\centerline{\includegraphics[scale = 1]{ani1-frame.pdf}}
+\centerline{\includegraphics[width=0.75\textwidth]{ani-frame1.pdf}}
 
 \caption{\label{fig:animate1}The last frame of an animation of every four-seam
 and cutting fastballs thrown by NY Yankee pitchers Mariano Rivera
@@ -1018,23 +1022,23 @@ top left plot portrays pitches thrown by Rivera to left-handed batters.}
 \end{figure}
 
 
-In \href{http://cpsievert.github.io/pitchRx/ani1}{the animation}
-corresponding to Figure~\ref{fig:animate1}, the upper right-hand
-portion (Rivera throwing to right-handed batters) reveals the clearest
-pattern in flight trajectories. Around the point of release, Rivera's
-two pitch types are hard to distinguish. However, after a certain
-point, there is a very different flight path among the two pitch types.
-Specifically, the drastic left-to-right movement of the cut fastball
-is noticeably different from the slight right-to-left movement of
-the four-seam fastball. In recent years, cut fastballs have gained
-notoriety among the baseball community as a coveted pitch for pitchers
-have at their disposal. This is largely due to the difficulty that
-a batter has in distinguishing the cut fastball from another fastball
-as the ball travels toward home plate. Clearly, this presents an advantage
-for the pitcher since they can use deception to reduce batter's ability
-to predict where the ball will cross home plate. This deception factor
-combined with Rivera's ability to locate his pitches explain his accolades
-as one of the greatest pitchers of all time \citep{NYT}.
+In the animation corresponding to Figure~\ref{fig:animate1}, the
+upper right-hand portion (Rivera throwing to right-handed batters)
+reveals the clearest pattern in flight trajectories. Around the point
+of release, Rivera's two pitch types are hard to distinguish. However,
+after a certain point, there is a very different flight path among
+the two pitch types. Specifically, the drastic left-to-right movement
+of the cut fastball is noticeably different from the slight right-to-left
+movement of the four-seam fastball. In recent years, cut fastballs
+have gained notoriety among the baseball community as a coveted pitch
+for pitchers have at their disposal. This is largely due to the difficulty
+that a batter has in distinguishing the cut fastball from another
+fastball as the ball travels toward home plate. Clearly, this presents
+an advantage for the pitcher since they can use deception to reduce
+batter's ability to predict where the ball will cross home plate.
+This deception factor combined with Rivera's ability to locate his
+pitches explain his accolades as one of the greatest pitchers of all
+time \citep{NYT}.
 
 Although we see a clear pattern in Rivera's pitches, MLB pitchers
 are hardly ever that predictable. Animating that many pitches for
@@ -1046,7 +1050,8 @@ PITCHf/x parameters to produce an overall sense of pitch type behavior
 (via the \code{avg.by} option). Note that the facet variables are
 automatically considered indexing variables. That is, in Figure~\ref{fig:animate2},
 there are eight 'average' pitches since there are two pitch types,
-two pitchers, and two types of batting stance.
+two pitchers, and two types of batting stance (the animation is available
+at \url{http://cpsievert.github.io/pitchRx/ani2}).
 %
 \begin{Schunk}
 \begin{Sinput}
@@ -1056,7 +1061,7 @@ animateFX(pitches, avg.by = "pitch_types", layer = list(coord_equal(), theme_bw(
 \end{Schunk}
 %
 \begin{figure}[h]
-\centerline{\includegraphics[scale = 1]{ani2-frame.pdf}}
+\centerline{\includegraphics[width=0.75\textwidth]{ani-frame2.pdf}}
 
 \caption{\label{fig:animate2}The last frame of an animation of 'averaged'
 four-seam and cutting fastballs thrown by NY Yankee pitchers Mariano
@@ -1093,7 +1098,7 @@ interactiveFX(Rivera, avg.by = "pitch_types")
 \centerline{\includegraphics[scale = .45]{rgl_b.png}}%
 \end{minipage}\hspace*{\fill}%
 \begin{minipage}[t]{0.45\textwidth}%
-\centerline{\includegraphics[scale = .45]{rgl_a.png}}%
+\centerline{\includegraphics[scale = .4]{rgl_a.png}}%
 \end{minipage}
 
 \caption{3D scatterplot of pitches from Rivera. Pitches are plotted every one-hundredth
@@ -1119,6 +1124,7 @@ of leveraging \pkg{XML2R} to quickly assemble custom XML data collection
 mechanisms.
 
 \section{Acknowledgements}
+
 Many thanks to my major professor, Dr. Heike Hofmann, for her direction
 and support throughout this project. Thanks also to the anonymous
 reviewers for helpful feedback. This document was created using the

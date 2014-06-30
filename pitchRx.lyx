@@ -145,7 +145,13 @@ opts_chunk$set(cache.path="cache/", out.width='1.05
 \backslash
 
 \backslash
-textwidth', warning=FALSE, message=FALSE, prompt=FALSE, tidy=FALSE) 
+textwidth', 
+\end_layout
+
+\begin_layout Plain Layout
+
+  warning=FALSE, message=FALSE, prompt=FALSE, tidy=FALSE, comment = "#>")
+ 
 \end_layout
 
 \begin_layout Plain Layout
@@ -358,10 +364,15 @@ What is PITCHf/x?
 \end_layout
 
 \begin_layout Standard
-PITCHf/x is a general term for a system of cameras which tracks the flight
- of a baseball with a series of 3D measurements.
- These measurements define a baseball's flight path from a pitcher's hand
- to home plate.
+PITCHf/x is a general term for a system that generates a series of 3D measuremen
+ts of a baseball's path from a pitcher's hand to home plate 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "patent"
+
+\end_inset
+
+.
 \begin_inset Foot
 status open
 
@@ -398,17 +409,11 @@ dfn{batter}
 
 \end_inset
 
- A best fitting parametric curve is fit to these measurements under the
- assumption of constant acceleration 
-\begin_inset CommandInset citation
-LatexCommand citep
-key "patent"
-
-\end_inset
-
-.
- There are studies that suggest that this assumption is quite reasonable
- -- especially for non-knuckleballs 
+ In an attempt to estimate the location of the ball at any time point, a
+ quadratic regression model with nine parameters (defined by the equations
+ of motion for constant linear acceleration) is fit to each pitch.
+ Studies with access to the actual measurements suggest that this model
+ is quite reasonable -- especially for non-knuckleball pitches 
 \begin_inset CommandInset citation
 LatexCommand citep
 key "trajecoryAnalysis"
@@ -416,12 +421,12 @@ key "trajecoryAnalysis"
 \end_inset
 
 .
- In other words, the smoothed flight paths are often a reasonable approximation
- (within a couple of inches) of the real path.
- The parameters used to fit this curve are made available in XML format
- on a publicly accessible website.
- This website, maintained by MLBAM, also hosts a wealth of other baseball
- related data used to inform MLB's Gameday webcast in near real time.
+ That is, the fitted path often provides a reasonable estimate (within a
+ couple of inches) of the actual locations.
+ Unfortunately, only the parameter estimates are made available to the public.
+ The website that provides these estimates is maintained by MLBAM and hosts
+ a wealth of other baseball related data used to inform MLB's Gameday webcast
+ service in near real time.
 \end_layout
 
 \begin_layout Subsection
@@ -486,9 +491,9 @@ PITCHf/x data is and can be used for many different projects.
  If you have witnessed television broadcasts of MLB games, you know one
  obvious application of PITCHf/x is locating pitches in the strike-zone
  as well as recreating flight trajectories, tracking pitch speed, etc.
- Some well-known and statistically intriguing problems related to PITCHf/x
- include: classifying pitch types, predicting pitch sequences, and clustering
- pitchers with similar tendencies 
+ Some on-going statistical research related to PITCHf/x includes: classifying
+ pitch types, predicting pitch sequences, and clustering pitchers with similar
+ tendencies 
 \begin_inset CommandInset citation
 LatexCommand citep
 key "curve"
@@ -1758,7 +1763,7 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = 0.75]{Drawing1.png}}
+includegraphics[scale = 1.25]{Drawing1.pdf}}
 \end_layout
 
 \end_inset
@@ -1987,7 +1992,7 @@ pkg{XML2R}
 
 \end_inset
 
- has also been implemented in the R package 
+ has also been used in the R package 
 \begin_inset ERT
 status open
 
@@ -2309,7 +2314,7 @@ status open
 
 \begin_layout Plain Layout
 
-obs[c(1, 2500)]
+obs[1]
 \end_layout
 
 \begin_layout Plain Layout
@@ -2985,7 +2990,7 @@ tables <- collapse_obs(obswkey)
 
 \begin_layout Plain Layout
 
-tables <- tables[-grep("^game//inning$", names(tables))]      
+tables <- tables[!grepl("^game//inning$", names(tables))]      
 \end_layout
 
 \begin_layout Plain Layout
@@ -3399,8 +3404,7 @@ code{dat}
 \end_inset
 
  is nearly 300MB.
- Multiplying this number by 100 days exceeds the random-access memory of
- most machines.
+ Multiplying this number by 100 days exceeds the memory of most machines.
  Thus, if a large amount of data is required, the user should exploit the
  R database interface 
 \begin_inset CommandInset citation
@@ -3417,8 +3421,8 @@ Storing and querying Gameday data
 \end_layout
 
 \begin_layout Standard
-Since PITCHf/x data can easily exhaust random-access memory, one should
- consider establishing a database instance before using 
+Since PITCHf/x data can easily exhaust memory, one should consider establishing
+ a database instance before using 
 \begin_inset ERT
 status open
 
@@ -3574,34 +3578,8 @@ code{db}
 
 \end_inset
 
- which now has PITCHf/x data from 2008 to 2014.
+ which now has PITCHf/x data from 2008 to date.
  This query requires criteria on: the 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-code{des}
-\end_layout
-
-\end_inset
-
- field (in the 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-code{pitch}
-\end_layout
-
-\end_inset
-
- table), the 
 \begin_inset ERT
 status open
 
@@ -3629,6 +3607,34 @@ code{atbat}
 
 \end_inset
 
+ table), the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch
+\backslash
+_type}
+\end_layout
+
+\end_inset
+
+ field (in the 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+code{pitch}
+\end_layout
+
+\end_inset
+
  table), and the 
 \begin_inset ERT
 status open
@@ -3643,8 +3649,8 @@ code{date}
 \end_inset
 
  field (in both tables).
- To reduce the time required to find such records and execute such a query,
- one should create an index on each of these three fields.
+ To reduce the time required to search those records, one should create
+ an index on each of these three fields.
 \end_layout
 
 \begin_layout Standard
@@ -3663,12 +3669,13 @@ library(DBI)
 
 \begin_layout Plain Layout
 
-dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
+dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+ 
 \end_layout
 
 \begin_layout Plain Layout
 
-dbSendQuery(db$con, "CREATE INDEX pitcher_index ON atbat(pitcher_name)")
+dbSendQuery(db$con, "CREATE INDEX type_index ON pitch(pitch_type)") 
 \end_layout
 
 \begin_layout Plain Layout
@@ -3894,7 +3901,7 @@ at.bat <- tbl(db, "atbat") %>%
 
 \begin_layout Plain Layout
 
-  filter(pitcher_name == "Mariano Rivera" | pitcher_name == "Phil Hughes")
+  filter(pitcher_name %in% c("Mariano Rivera", "Phil Hughes"))
 \end_layout
 
 \begin_layout Plain Layout
@@ -3948,12 +3955,12 @@ status open
 
 \begin_layout Plain Layout
 
-fbs <- tbl(db, "pitch") %>%   
+fbs <- tbl(db, "pitch") %>%      
 \end_layout
 
 \begin_layout Plain Layout
 
-  filter(pitch_type == "FF" | pitch_type == "FC")
+  filter(pitch_type %in% c("FF", "FC"))
 \end_layout
 
 \begin_layout Plain Layout
@@ -4175,7 +4182,7 @@ code{decisions}
 
 \end_inset
 
- made starting in 2008 can be obtained from 
+ made between 2008 and 2013 can be obtained from 
 \begin_inset ERT
 status open
 
@@ -4215,58 +4222,66 @@ status open
 
 \begin_layout Plain Layout
 
+# First, add an index on the pitch description to speed up run-time
+\end_layout
+
+\begin_layout Plain Layout
+
+dbSendQuery(db$con, "CREATE INDEX des_index ON pitch(des)")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
 pitch <- tbl(db, "pitch") %>%   
 \end_layout
 
 \begin_layout Plain Layout
 
-  filter(des == "Called Strike" | des == "Ball") %>% 
+  filter(des %in% c("Called Strike", "Ball")) %>%   
 \end_layout
 
 \begin_layout Plain Layout
 
-# Keep location variables, descriptions & game/atbat ids  
+  # Keep pitch location, descriptions    
 \end_layout
 
 \begin_layout Plain Layout
 
-  select(px, pz, des, gameday_link, num) %>% 
+  select(px, pz, des, gameday_link, num) %>%   
 \end_layout
 
 \begin_layout Plain Layout
 
-# Create 0-1 indicator of strike/ball   
+  # 0-1 indicator of strike/ball   
 \end_layout
 
 \begin_layout Plain Layout
 
-  mutate(strike = as.numeric(des == "Called Strike")) 
+  mutate(strike = as.numeric(des == "Called Strike"))
 \end_layout
 
 \begin_layout Plain Layout
 
-  
 \end_layout
 
 \begin_layout Plain Layout
 
-atbat <- tbl(db, "atbat") %>% 
+atbat <- tbl(db, "atbat") %>%   
 \end_layout
 
 \begin_layout Plain Layout
 
-  filter(date <= "2014_01_01") %>%
-\end_layout
-
-\begin_layout Plain Layout
-
-# Most of these variables are used as covariates in probabilistic models
-   
+  # Select variables to be used later as covariates in probabilistic models
 \end_layout
 
 \begin_layout Plain Layout
 
   select(b_height, p_throws, stand, inning_side, date, gameday_link, num)
+    
 \end_layout
 
 \begin_layout Plain Layout
@@ -4275,7 +4290,17 @@ atbat <- tbl(db, "atbat") %>%
 
 \begin_layout Plain Layout
 
-decisions <- collect(inner_join(pitch, atbat))
+decisions <- inner_join(pitch, atbat) %>%   
+\end_layout
+
+\begin_layout Plain Layout
+
+  filter(date <= "2014_01_01") %>%   
+\end_layout
+
+\begin_layout Plain Layout
+
+  collect()
 \end_layout
 
 \begin_layout Plain Layout
@@ -4411,7 +4436,9 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = 1]{strikes.pdf}}
+includegraphics[width=0.95
+\backslash
+textwidth]{strikes.png}}
 \end_layout
 
 \end_inset
@@ -4955,7 +4982,9 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = 1]{strikesVSballs.pdf}}
+includegraphics[width=0.95
+\backslash
+textwidth]{strikesVSballs.pdf}}
 \end_layout
 
 \end_inset
@@ -5465,7 +5494,9 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = 1]{prob-strike.pdf}}
+includegraphics[width=0.95
+\backslash
+textwidth]{prob-strike.pdf}}
 \end_layout
 
 \end_inset
@@ -5979,7 +6010,20 @@ code{pitches}
 
 \end_inset
 
- data frame obtained earlier.
+ data frame obtained earlier (the animation is available at 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://cpsievert.github.io/pitchRx/ani1}
+\end_layout
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
@@ -6028,7 +6072,9 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = 1]{ani1-frame.pdf}}
+includegraphics[width=0.75
+\backslash
+textwidth]{ani-frame1.pdf}}
 \end_layout
 
 \end_inset
@@ -6081,20 +6127,7 @@ d batters.
 \end_layout
 
 \begin_layout Standard
-In 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-href{http://cpsievert.github.io/pitchRx/ani1}{the animation}
-\end_layout
-
-\end_inset
-
- corresponding to Figure
+In the animation corresponding to Figure
 \begin_inset ERT
 status open
 
@@ -6182,7 +6215,21 @@ reference "fig:animate2"
 \end_inset
 
 , there are eight 'average' pitches since there are two pitch types, two
- pitchers, and two types of batting stance.
+ pitchers, and two types of batting stance (the animation is available at
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://cpsievert.github.io/pitchRx/ani2}
+\end_layout
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
@@ -6232,7 +6279,9 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = 1]{ani2-frame.pdf}}
+includegraphics[width=0.75
+\backslash
+textwidth]{ani-frame2.pdf}}
 \end_layout
 
 \end_inset
@@ -6486,7 +6535,7 @@ status open
 \backslash
 centerline{
 \backslash
-includegraphics[scale = .45]{rgl_a.png}}
+includegraphics[scale = .4]{rgl_a.png}}
 \end_layout
 
 \end_inset

@@ -85,3 +85,8 @@ writeLines(txt, con = output)
 #lidx <- which(txt %in% c(" ", ""))
 #grab line before empty lines
 #text[lidx - 1]
+
+system("pdflatex RJwrapper.tex")
+system("bibtex RJwrapper.aux")
+system("pdflatex RJwrapper.tex")
+system("pdflatex RJwrapper.tex")
