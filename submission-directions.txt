@@ -1,9 +1,2 @@
 (1) Within lyx, go to: File -> Export -> LaTeX (pdflatex)
 (2) Run the post-process.R script
-(3) *Manually* clean up empty lines in sievert.tex, then place it in submissions folder
-(4) Compile:
-
-pdflatex RJwrapper.tex
-bibtex RJwrapper.aux
-pdflatex RJwrapper.tex
-pdflatex RJwrapper.tex
